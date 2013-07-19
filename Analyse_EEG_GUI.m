@@ -192,7 +192,9 @@ for k= Channels % Loop through number of animals
             Channel_number = Channel_number+1; % Increase the channel number needed to be analysed           
             
             [Data_out dataIn] = Profusion_Ext_Filt_GUI(StartTime, Duration,Decimate, band_coeff,Channel_number,Time_adjustment); % Extract data from profusion, Data_out is filtered and dataIn is not.
-            %                             save(['Animal',int2str(k),'Seizure',int2str(j),'Channel',int2str(m),'.mat'],'dataIn','Data_out');
+            if DetectorSettings.SaveData
+                   save(['Animal',int2str(k),'Seizure',int2str(j),'Channel',int2str(m),'.mat'],'dataIn','Data_out');
+            end
             
             if m ==1 % Check if currently looking at first channel
                 
