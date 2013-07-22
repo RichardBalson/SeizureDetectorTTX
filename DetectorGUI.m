@@ -11,11 +11,6 @@ function DetectorGUI
 % C:\Users\balsonr\Dropbox\Work\PhD\Projects\Estimation\UKF\UKFFinal\GUI\EEGData\20130312Annotate.xlsx
 
 
-% Working on
-
-% Read EEG Excel, make usre it is working correctly ad that it checks the
-% Excel file properly.
-
 clear
 clc
 close all
@@ -246,7 +241,7 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',h,'units','normalize
 % Callback when Start_Program push button is pressed
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     function StartProgram(varargin)
-        DetectorSettings = struct('EEGFilepath',{{0}},'ExcelFilepath',{{0}},'PlotFeatures',0,'LLThres',0,'AmpThres',0,'CompareSeizures',0,'Padding',10,'Channels',0,'SaveData',0);
+        DetectorSettings = struct('EEGFilepath',{{0}},'ExcelFilepath',{{0}},'PlotFeatures',0,'LLThres',0,'AmpThres',0,'CompareSeizures',0,'Padding','10','Channels',0,'SaveData',0);
         clear filepath LLThres AmpThres Excel_data_filepath ProgramType % CLear all temporary variables at start of callback
         %         set(PushStart,'Enable','Off') % Disable Push button during analysis
         set(ErrorMessage,'Visible','Off') % Turn off error message edit box
@@ -316,7 +311,7 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',h,'units','normalize
         refreshdata;
         ChannelsRequested = get(ChannelChoice,'string');
         if isempty(ChannelsRequested)
-            DetectorSettings.Channels =0;
+            DetectorSettings.Channels ='all';
         else
            DetectorSettings.Channels =ChannelsRequested; 
         end

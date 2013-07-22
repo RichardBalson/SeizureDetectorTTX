@@ -163,7 +163,7 @@ for mcheck = 1:10 % Loop through dummy varaible
         break; % Break loop
     end
 end
-Spreadsheet_Name = ['AnimalNumber ',int2str(k),' D ',int2str(Start.CurrentDay),'_',int2str(Start.Month),'_',int2str(Start.Year),Spreadsheet_number]; % Initilaise spreadsheet name
+Spreadsheet_Name = ['AnimalNumber ',int2str(k),'_Pad_',int2str(Start.Padding),' SD',int2str(Start.Day),'CD',int2str(Start.CurrentDay),'_',int2str(Start.Month),'_',int2str(Start.Year),Spreadsheet_number]; % Initilaise spreadsheet name
 Sheet_name = ['Seizure',int2str(j)]; % Initilaise sheet name
 column = [char((m-1)*6+65),'2']; % Specify initialse starting point in excel for Feature names
 columnN = [char((m-1)*6+65),'1']; % Specify initial statrting point for channel details

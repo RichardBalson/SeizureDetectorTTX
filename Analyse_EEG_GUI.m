@@ -38,11 +38,12 @@ Start.AMPM = StartDateTime(end-1:end);
 
 [ChannelLength, Number_of_animals]  = CheckChannels(ChannelName); % Determine the number of channels per animal
 
-if DetectorSettings.Channels ~=0
+if ~strcmp(DetectorSettings.Channels,'all')
  for k =1:ceil(length(DetectorSettings.Channels)/2)
   channel(k) = str2double(DetectorSettings.Channels(1+2*(k-1)));
  end
-else channel=1:Number_of_animals;
+else
+  channel=1:Number_of_animals;
 end
 Channels =[];
 for k = 1:length(channel)
@@ -79,6 +80,7 @@ end
     end
 if ProgramType(2) ==1 % Seizure Characterisation is specified
     Padding = str2double(DetectorSettings.Padding); % Specify padding used at start and end of seizure
+    Start.Padding = Padding;
 Time_adjustment = Time_adjustment_Days;
 Time_adjustment_Days =0;
     Seizure_time = ReadEEGExcel(DetectorSettings.ExcelFilepath,'Matlab',Number_of_animals,Start.Day,Time_adjustment);
