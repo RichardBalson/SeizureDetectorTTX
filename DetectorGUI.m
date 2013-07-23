@@ -42,6 +42,8 @@ Seizure_Characterise =uicontrol('style','checkbox','parent',h,'units','normalize
 % Characterise all data
 Characterise_all_data =uicontrol('style','checkbox','parent',h,'units','normalized','position',[0.4 0.8 0.25 0.04],'string','Characterise Data','callback',@BackgCHK);
 
+Post_process_characterise = uicontrol('style','checkbox','parent',h,'units','normalized','position',[0.4 0.75 0.25 0.04],'string','Process Characterised Data','callback',@ProcessData);
+
 % Conditional Check boxes
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -55,60 +57,63 @@ Save_data= uicontrol('style','checkbox','parent',h,'units','normalized','positio
 % between detected and annotated seizures needs to be made
 Compare_Seizures = uicontrol('style','checkbox','parent',h,'units','normalized','position',[0.7 0.9 0.2 0.04],'string','Compare detected and characterised seizures','Visible','off','Callback',@CompareCHK);
 
+Post_process_annotate = uicontrol('style','checkbox','parent',h,'units','normalized','position',[0.7 0.8 0.22 0.04],'string','Process Characterised Data','Visible','Off');
 
 % Text
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 % Text detailing information for the filepath
-uicontrol('style','text','parent',h,'units','normalized','position',[0.1 0.9 0.25 0.04],'string','EEG data Path (c:\...\2012.eeg file)');
+uicontrol('style','text','parent',h,'units','normalized','position',[0.03 0.9 0.35 0.04],'string','EEG data Path (c:\...\2012.eeg file)');
 
 % Specify channels text
-uicontrol('style','text','parent',h,'units','normalized','position',[0.4 0.75 0.25 0.04],'string','Analyse Channels (1,2,..,8)');
+uicontrol('style','text','parent',h,'units','normalized','position',[0.4 0.7 0.25 0.04],'string','Analyse Channels (1,2,..,8)');
 
 % Conditional text
 % ~~~~~~~~~~~~~~~~~~~~
 
 % Available when Seizure Characterise is checked. Details of filepath for
 % excel file
-EEGSort= uicontrol('style','text','parent',h,'units','normalized','position',[0.1 0.55 0.25 0.04],'string','EEG Seizure Data Times (c:\...\2012Sorted.xls file)','Visible','off');
+EEGSort= uicontrol('style','text','parent',h,'units','normalized','position',[0.03 0.55 0.35 0.04],'string','EEG Seizure Data Times (c:\...\2012Sorted.xls file)','Visible','off');
 
 % Available when Seizure Detection is checked. Details on line length
 % threshold.
-LineLengthString= uicontrol('style','text','parent',h,'units','normalized','position',[0.1 0.75 0.25 0.04],'string','Line Length Threshold','Visible','off'); %
+LineLengthString= uicontrol('style','text','parent',h,'units','normalized','position',[0.03 0.75 0.35 0.04],'string','Line Length Threshold','Visible','off'); %
 
 % Available when Seizure Detection is checked. Details on amplitude
 % threshold.
-AmplitudeString= uicontrol('style','text','parent',h,'units','normalized','position',[0.1 0.65 0.25 0.04],'string','Amplitude Threshold','Visible','off'); %  (Multiple above mean for seizure, such that if amplitude mean = 0.1 and threshold =3, seizure is classified if the determine amplitude is 0.3 or above
+AmplitudeString= uicontrol('style','text','parent',h,'units','normalized','position',[0.03 0.65 0.35 0.04],'string','Amplitude Threshold','Visible','off'); %  (Multiple above mean for seizure, such that if amplitude mean = 0.1 and threshold =3, seizure is classified if the determine amplitude is 0.3 or above
 
-PaddingString = uicontrol('style','text','parent',h,'units','normalized','position',[0.4 0.65 0.25 0.04],'string','Padding for annotations (10)','Visible','off');
+PaddingString = uicontrol('style','text','parent',h,'units','normalized','position',[0.4 0.6 0.25 0.04],'string','Padding for annotations (10)','Visible','off');
+
+PostprocessString = uicontrol('style','text','parent',h,'units','normalized','position',[0.03 0.55 0.35 0.04],'string','Characterised seizures Excel file','Visible','off');
 % Edit boxes
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 % Specify EEG data path for analysis
-EEG_data_path = uicontrol('style','edit','parent',h,'units','normalized','position',[0.1 0.85 0.25 0.04]);
+EEG_data_path = uicontrol('style','edit','parent',h,'units','normalized','position',[0.03 0.85 0.35 0.04]);
 
 % Provides details of errors that occur, and that the analysis has started
 ErrorMessage = uicontrol('style','edit','parent',h,'units','normalized','position',[0.4 0.3 0.4 0.2],'Visible','off');
 
-ChannelChoice = uicontrol('style','edit','parent',h,'units','normalized','position',[0.4 0.7 0.25 0.04]);
+ChannelChoice = uicontrol('style','edit','parent',h,'units','normalized','position',[0.4 0.65 0.25 0.04]);
 
 % Optional edit boxes
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 % Available when Seizure Charaterise is checked. Edit box for details about EEG Seizure Data Times
-EEG_Seizure_times_data_path = uicontrol('style','edit','parent',h,'units','normalized','position',[0.1 0.45 0.25 0.04],'Visible','off');
+EEG_Seizure_times_data_path = uicontrol('style','edit','parent',h,'units','normalized','position',[0.03 0.45 0.35 0.04],'Visible','off');
 
 % Avaliablle whne Seizure Detection is checked. Edit box for line length
 % threshold specified
-LineLengthThreshold = uicontrol('style','edit','parent',h,'units','normalized','position',[0.1 0.7 0.25 0.04],'Visible','off');
+LineLengthThreshold = uicontrol('style','edit','parent',h,'units','normalized','position',[0.03 0.7 0.35 0.04],'Visible','off');
 
 % Avaliablle whne Seizure Detection is checked. Edit box for amplitude
 % threshold specified
-AmplitudeThreshold = uicontrol('style','edit','parent',h,'units','normalized','position',[0.1 0.6 0.25 0.04],'Visible','off');
+AmplitudeThreshold = uicontrol('style','edit','parent',h,'units','normalized','position',[0.03 0.6 0.35 0.04],'Visible','off');
 
 % Avaliablle whne Seizure Detection is checked. Edit box for amplitude
 % threshold specified
-Padding = uicontrol('style','edit','parent',h,'units','normalized','position',[0.4 0.6 0.25 0.04],'Visible','off');
+Padding = uicontrol('style','edit','parent',h,'units','normalized','position',[0.4 0.55 0.25 0.04],'Visible','off');
 
 % PushButton
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -116,11 +121,11 @@ Padding = uicontrol('style','edit','parent',h,'units','normalized','position',[0
 % Push button to start analysis
 PushStart=uicontrol('style','pushbutton','parent',h,'units','normalized','position',[0.5 0.1 0.25 0.1],'string','Start','callback',@StartProgram);
 
-Browse_EEG_file=uicontrol('style','pushbutton','parent',h,'units','normalized','position',[0.1 0.8 0.1 0.04],'string','Browse','callback',@BrowseEEG);
+Browse_EEG_file=uicontrol('style','pushbutton','parent',h,'units','normalized','position',[0.03 0.8 0.15 0.04],'string','Browse','callback',@BrowseEEG);
 
 % Conditional pushbutton
 % ~~~~~~~~~~~~~~~~~~
-Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',h,'units','normalized','position',[0.1 0.5 0.1 0.04],'string','Browse','callback',@BrowseAnnotate,'Visible','off');
+Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',h,'units','normalized','position',[0.03 0.5 0.15 0.04],'string','Browse','callback',@BrowseAnnotate,'Visible','off');
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -151,6 +156,9 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',h,'units','normalize
             set(Save_data,'Visible','Off') % Turn off plot features check box
             set(Plot_features,'Value',0);
             set(Save_data,'Value',0);
+            set(Post_process_characterise,'Value',0);
+            set(Post_process_annotate,'Value',0,'Visible','off');
+            set(PostprocessString,'Visible','Off');
             set(Seizure_Characterise,'Value',0) % Uncheck Seizure Characterise
             set(Characterise_all_data,'Value',0) % Uncheck Characterise all data
             set(EEGSort,'Visible','Off') % Turn off EEG sort filepath text
@@ -180,7 +188,7 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',h,'units','normalize
             set(EEG_Seizure_times_data_path,'Visible','On')% Turn on EEG sort filepath edit box
             set(Seizure_Detection,'Value',0) % Uncheck Seizure Detection
             set(Save_data,'Visible','On') % Turn off plot features check box
-            set(Browse_Annotate_EEG,'Visible','On') % Turn off browse EEG anotate file push button
+            set(Browse_Annotate_EEG,'Visible','On') % Turn on browse EEG anotate file push button
             set(Characterise_all_data,'Value',0) % Uncheck Characterise all data
             set(Plot_features,'Visible','On') % Turn on plot features check box
             set(LineLengthString,'Visible','Off');% Turn off line length threshold text
@@ -189,6 +197,9 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',h,'units','normalize
             set(AmplitudeThreshold,'Visible','Off');% Turn off amplitude threshold edit box
             set(Compare_Seizures,'Visible','Off'); % Turn off compare seizure check box
             set(Compare_Seizures,'Value',0);
+            set(Post_process_characterise,'Value',0);
+            set(Post_process_annotate,'Visible','On');
+            set(PostprocessString,'Visible','Off');
         else % Seizure_Characterise unchecked
             set(PaddingString,'Visible','Off'); % Specify padding as off
             set(Padding,'Visible','Off'); % Specify padding as off
@@ -199,6 +210,7 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',h,'units','normalize
             set(Save_data,'Visible','Off') % Turn off plot features check box
             set(Plot_features,'Value',0);
             set(Save_data,'Value',0);
+            set(Post_process_annotate,'Value',0,'Visible','Off');
         end
     end
 
@@ -224,8 +236,43 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',h,'units','normalize
             set(AmplitudeThreshold,'Visible','Off');% Turn off amplitude threshold edit box
             set(Compare_Seizures,'Visible','Off'); % Turn off compare seizure check box
             set(Compare_Seizures,'Value',0);
+            set(Post_process_characterise,'Value',0);
+            set(Post_process_annotate,'Visible','Off');
+            set(PostprocessString,'Visible','Off');
         end
     end
+
+% Callback when postprocess data is called
+
+    function ProcessData(varargin)
+        if get(Post_process_characterise,'Value')
+            set(PostprocessString,'Visible','On');
+            set(EEGSort,'Visible','off');
+            set(PaddingString,'Visible','On'); % Specify padding as on
+            set(Padding,'Visible','On'); % Specify padding as on
+            set(Seizure_Characterise,'Value',0) % Uncheck Seizure Characterise
+            set(EEG_Seizure_times_data_path,'Visible','On')% Turn on EEG sort filepath edit box
+            set(Seizure_Detection,'Value',0) % Uncheck Seizure Detection
+            set(Browse_Annotate_EEG,'Visible','On') % Turn on browse EEG anotate file push button
+            set(Characterise_all_data,'Value',0) % Uncheck Characterise all data
+            set(Save_data,'Visible','Off') % Turn off plot features check box
+            set(Plot_features,'Visible','Off','Value',0) % Turn on plot features check box
+            set(LineLengthString,'Visible','Off');% Turn off line length threshold text
+            set(AmplitudeString,'Visible','Off');% Turn off amplitude threshold text
+            set(LineLengthThreshold,'Visible','Off');% Turn off line length threshold edit box
+            set(AmplitudeThreshold,'Visible','Off');% Turn off amplitude threshold edit box
+            set(Compare_Seizures,'Visible','Off'); % Turn off compare seizure check box
+            set(Compare_Seizures,'Value',0);
+            set(Post_process_annotate,'Value',0,'Visible','off');
+        else
+            set(PaddingString,'Visible','Off'); % Specify padding as on
+            set(Padding,'Visible','Off'); % Specify padding as on
+            set(EEG_Seizure_times_data_path,'Visible','Off')% Turn on EEG sort filepath edit box
+            set(Browse_Annotate_EEG,'Visible','Off') % Turn on browse EEG anotate file push button
+            set(PostprocessString,'Visible','Off');
+        end
+    end
+
 
 % Callback when Compare_Seizures is checked
     function CompareCHK(varargin)
@@ -243,8 +290,9 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',h,'units','normalize
 % Callback when Start_Program push button is pressed
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     function StartProgram(varargin)
-        DetectorSettings = struct('EEGFilepath',{{0}},'ExcelFilepath',{{0}},'PlotFeatures',0,'LLThres',0,'AmpThres',0,'CompareSeizures',0,'Padding','10','Channels',0,'SaveData',0);
-        clear filepath LLThres AmpThres Excel_data_filepath ProgramType % CLear all temporary variables at start of callback
+        DetectorSettings = struct('EEGFilepath',{{0}},'ExcelFilepath',{{0}},'PlotFeatures',0,'LLThres',0,'AmpThres',0,'CompareSeizures',0,'Padding','10','Channels',0,'SaveData',0,'ProcessData',0);
+        ProgramType = [0 0 0];
+        clear filepath LLThres AmpThres Excel_data_filepath % CLear all temporary variables at start of callback
         %         set(PushStart,'Enable','Off') % Disable Push button during analysis
         set(ErrorMessage,'Visible','Off') % Turn off error message edit box
         set(ErrorMessage,'string','Analysis Started') % Set error message
@@ -289,6 +337,7 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',h,'units','normalize
         elseif get(Seizure_Characterise,'Value') % Check if seizure characterisation is checked
             DetectorSettings.PlotFeatures = get(Plot_features,'Value'); % Update detector settings with plot features
             DetectorSettings.SaveData = get(Save_data,'Value');
+            DetectorSettings.ProcessData = get(Post_process_annotate,'Value');
             Excel_data_filepath =  get(EEG_Seizure_times_data_path,'string'); % Get excel filepath from edit box
             if isempty(Excel_data_filepath)% Check if excel filepath exists
                 set(ErrorMessage,'string','No excel filepath specified') % Set error message
@@ -304,6 +353,15 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',h,'units','normalize
             ProgramType = [0 1 0]; % Set program type to Seizure characterisation
         elseif get(Characterise_all_data,'Value') ==1 % Check if characterise all data is checked
             ProgramType = [0 0 1]; % Set program type to characterise all data
+        elseif get(Post_process_characterise,'Value')
+            DetectorSettings.ProcessData=1;
+            if isempty(Excel_data_filepath)% Check if excel filepath exists
+                set(ErrorMessage,'string','No excel filepath specified') % Set error message
+                set(ErrorMessage,'Visible','On') % Show error message
+                return % End callback
+            else
+                DetectorSettings.ExcelFilepath = Excel_data_filepath; % Set filepath for excel file in detector settings
+            end
         else % Check if no options selected
             set(ErrorMessage,'string','No options chosen') % Set error message
             set(ErrorMessage,'Visible','On') % Display error message
@@ -315,7 +373,7 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',h,'units','normalize
         if isempty(ChannelsRequested)
             DetectorSettings.Channels ='all';
         else
-           DetectorSettings.Channels =ChannelsRequested; 
+            DetectorSettings.Channels =ChannelsRequested;
         end
         Analyse_EEG_GUI(DetectorSettings,ProgramType); % Begin analysis of data
         set(PushStart,'Enable','On') % Enable push button

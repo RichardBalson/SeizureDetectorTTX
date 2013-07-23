@@ -14,6 +14,7 @@ function Analyse_EEG_GUI(DetectorSettings,ProgramType)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Extract Data from profusion
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if any(ProgramType)
 Day_duration = 24*60*60;
 try
     [fs, ~,~,~,~,StartDateTime,StudyLength,ChannelName] = CMConnect_ProFusionEEG4(DetectorSettings.EEGFilepath); % Determine study frequency (fs), the time and date the study started (StartDateTime), its length (StudyLength) and the names of channels (ChennelName)
@@ -38,11 +39,11 @@ Start.AMPM = StartDateTime(end-1:end);
 [ChannelLength, Number_of_animals]  = CheckChannels(ChannelName); % Determine the number of channels per animal
 
 if ~strcmp(DetectorSettings.Channels,'all')
- for k =1:ceil(length(DetectorSettings.Channels)/2)
-  channel(k) = str2double(DetectorSettings.Channels(1+2*(k-1)));
- end
+    for k =1:ceil(length(DetectorSettings.Channels)/2)
+        channel(k) = str2double(DetectorSettings.Channels(1+2*(k-1)));
+    end
 else
-  channel=1:Number_of_animals;
+    channel=1:Number_of_animals;
 end
 Channels =[];
 for k = 1:length(channel)
@@ -71,17 +72,17 @@ if ProgramType(1) ==1 % Seizure Detection is specified
         Seizure_Compare = ReadEEGExcel(DetectorSettings.ExcelFilepath,'Matlab',Number_of_animals,Start.Day,0);
     end
 end
-    if ((strcmp(Start.AMPM,'AM')) || ((Start.Hours == 12) && (strcmp(Start.AMPM,'PM')))) % This script filters and extracts profusion data. The startime is the
-        % starttime of seizures relative to midnight, in seconds,
-        Time_adjustment_Days = ((Start.Hours)*60+Start.Minutes)*60 + Start.Seconds; % remove time delay from recording time initialisation
-    else
-        Time_adjustment_Days = ((Start.Hours+12)*60+Start.Minutes)*60 + Start.Seconds; % remove time delay from recording time initialisation
-    end
+if ((strcmp(Start.AMPM,'AM')) || ((Start.Hours == 12) && (strcmp(Start.AMPM,'PM')))) % This script filters and extracts profusion data. The startime is the
+    % starttime of seizures relative to midnight, in seconds,
+    Time_adjustment_Days = ((Start.Hours)*60+Start.Minutes)*60 + Start.Seconds; % remove time delay from recording time initialisation
+else
+    Time_adjustment_Days = ((Start.Hours+12)*60+Start.Minutes)*60 + Start.Seconds; % remove time delay from recording time initialisation
+end
 if ProgramType(2) ==1 % Seizure Characterisation is specified
     Padding = str2double(DetectorSettings.Padding); % Specify padding used at start and end of seizure
     Start.Padding = Padding;
-Time_adjustment = Time_adjustment_Days;
-Time_adjustment_Days =0;
+    Time_adjustment = Time_adjustment_Days;
+    Time_adjustment_Days =0;
     Seizure_time = ReadEEGExcel(DetectorSettings.ExcelFilepath,'Matlab',Number_of_animals,Start.Day,Time_adjustment);
     Seizure_Compare=[0,0];
     % Extract times that seizures occur for each animal Seizure_time is a nx2xNumber_of_animals matrix.
@@ -91,7 +92,7 @@ Time_adjustment_Days =0;
     % for animal in cage 3
     % Determine time adjustment for annotated seizures
     Plot_features = DetectorSettings.PlotFeatures; % Get plotfeatures setting
-else % Seizure Detection or characteris all data selected
+elseif ProgramType(3) % Seizure Detection or characteris all data selected
     Time_adjustment =0;
     interval_duration = 150; % Specify data segment lengths to analyse
     Number_of_windows = floor(StudyLength/interval_duration); % Specify number of windows to analyse. Notice that by doing this the last data segment < interval_duration in length is lost
@@ -137,9 +138,9 @@ Animal=repmat(struct('SeizureStartT',{{'0'}},'SeizureEndT',{{'0'}}),Number_of_an
 
 for k= Channels % Loop through number of animals
     
-%     if ChannelLength(k) ==0 % Check if the specified cage was not used in recordings
-%         continue % Start next loop, or increase the caage number
-%     end
+    %     if ChannelLength(k) ==0 % Check if the specified cage was not used in recordings
+    %         continue % Start next loop, or increase the caage number
+    %     end
     
     if ProgramType(1)==1 % Check if program type is Seizure Detection
         Seizure_init =0; % Intialise seizure status
@@ -190,11 +191,11 @@ for k= Channels % Loop through number of animals
             
             clear Data_out dataIn % Clear variables containing current animal, channel and window data
             
-            Channel_number = Channel_number+1; % Increase the channel number needed to be analysed           
+            Channel_number = Channel_number+1; % Increase the channel number needed to be analysed
             
             [Data_out dataIn] = Profusion_Ext_Filt_GUI(StartTime, Duration,Decimate, band_coeff,Channel_number,Time_adjustment); % Extract data from profusion, Data_out is filtered and dataIn is not.
             if DetectorSettings.SaveData
-                   save(['Animal',int2str(k),'Seizure',int2str(j),'Channel',int2str(m),'.mat'],'dataIn','Data_out');
+                save(['Animal',int2str(k),'Seizure',int2str(j),'Channel',int2str(m),'.mat'],'dataIn','Data_out');
             end
             
             if m ==1 % Check if currently looking at first channel
@@ -234,22 +235,43 @@ for k= Channels % Loop through number of animals
         for Day = 1:inc
             Spreadsheet_Name = ['SeizuresDetectedN_AnimalNumber ',int2str(k),' D ',int2str(Start.Year),'_',int2str(Start.Month),'_',int2str(Start.Day+Day-1),'.xls']; % Specify name for spreadsheet
             xlswrite(Spreadsheet_Name,{'Seizure Start', 'Seizure End'},Sheet_name,'A1'); % Write names for each column
-                if length(Animal(k,Day).SeizureStartT)>1 % Check if a seizure was found for the animal of interest
-                    a={Animal(k,Day).SeizureStartT{:}; Animal(k,Day).SeizureEndT{:}}'; % Create a cell with all seizure data
-                    xlswrite(Spreadsheet_Name,[a{2:end,1}; a{2:end,2}]',Sheet_name,'A2'); % Write seizure data detected into excel sheet
-                end
+            if length(Animal(k,Day).SeizureStartT)>1 % Check if a seizure was found for the animal of interest
+                a={Animal(k,Day).SeizureStartT{:}; Animal(k,Day).SeizureEndT{:}}'; % Create a cell with all seizure data
+                xlswrite(Spreadsheet_Name,[a{2:end,1}; a{2:end,2}]',Sheet_name,'A2'); % Write seizure data detected into excel sheet
+            end
         end
-    if DetectorSettings.CompareSeizures
-        Time_adjustmentT = ((Start.Hours)*60+Start.Minutes)*60 + Start.Seconds;
-        Temp = Seizure_Compare(:,:,k);
-        Temp(Temp<Time_adjustmentT) = Temp(Temp<Time_adjustmentT)+Day_duration;
-        Annotated_data = zeros(size(Seizure_Compare,1),size(Seizure_Compare,2),2,inc);
-        for Day = 1:inc
-            Annotated_data = Temp(Temp(:,1)>Day_duration*(Day-1) & Temp(:,1)<Day_duration*(Day),:);
+        if DetectorSettings.CompareSeizures
+            Time_adjustmentT = ((Start.Hours)*60+Start.Minutes)*60 + Start.Seconds;
+            Temp = Seizure_Compare(:,:,k);
+            Temp(Temp<Time_adjustmentT) = Temp(Temp<Time_adjustmentT)+Day_duration;
+            Annotated_data = zeros(size(Seizure_Compare,1),size(Seizure_Compare,2),2,inc);
+            for Day = 1:inc
+                Annotated_data = Temp(Temp(:,1)>Day_duration*(Day-1) & Temp(:,1)<Day_duration*(Day),:);
                 %  Sort out Seizure Compare File to make sure that it is working correctly for different days
                 CompareSeizures(Start,k,Annotated_data,Animal(k,Day),Day);
+            end
         end
     end
+end
+elseif DetectorSettings.ProcessData
+    if ProgamType(2)
+        for k = Channels
+            for j = 1:Days 
+                Spreadsheet_Name = ['AnimalNumber ',int2str(k),'_Pad_',int2str(Start.Padding),' SD',int2str(Start.Day),'CD',int2str(Start.Day+j-1),'_',int2str(Start.Month),'_',int2str(Start.Year),Spreadsheet_number]; % Initilaise spreadsheet name
+                if exist([Spreadsheet_name,'.xls'],'file')
+                    ProcessExcelData([Spreadsheet_name,'.xls'],Start);
+                    
+                elseif exist([Spreadsheet_name,'.xlsx'],'file')
+                    ProcessExcelData([Spreadsheet_name,'.xls'],Start);
+                else
+                    continue
+                end
+            end
+        end
+    else
+        Spreadsheet_Name = DetectorSettings.ExcelFilepath;
+        Start.Padding = str2double(DetectorSettings.Padding);
+        ProcessExcelData(Spreadsheet_Name,Start);
     end
 end
 
