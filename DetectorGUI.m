@@ -15,6 +15,8 @@ clear
 clc
 close all
 
+addpath(genpath('..\GUI1'));
+
 % Create structure used for setting specified by GUI.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % GUI variables

@@ -10,7 +10,6 @@ function Analyse_EEG_GUI(DetectorSettings,ProgramType)
 
 
 % Add path for profusion connection and data extraction files
-addpath(genpath('ExtractPFEEG4Data'));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Extract Data from profusion
