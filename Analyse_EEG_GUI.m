@@ -14,7 +14,6 @@ function Analyse_EEG_GUI(DetectorSettings,ProgramType)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Extract Data from profusion
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if any(ProgramType)
 Day_duration = 24*60*60;
 try
     [fs, ~,~,~,~,StartDateTime,StudyLength,ChannelName] = CMConnect_ProFusionEEG4(DetectorSettings.EEGFilepath); % Determine study frequency (fs), the time and date the study started (StartDateTime), its length (StudyLength) and the names of channels (ChennelName)
@@ -57,6 +56,8 @@ end
 % four animals in cages 1,3,5 and 7 each with four channels than
 % Number_of_animals = 7 and ChannelLength is 7x1 vector [4,0,4,0,4,0,4]'
 
+if any(ProgramType)
+
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set initial settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -92,7 +93,7 @@ if ProgramType(2) ==1 % Seizure Characterisation is specified
     % for animal in cage 3
     % Determine time adjustment for annotated seizures
     Plot_features = DetectorSettings.PlotFeatures; % Get plotfeatures setting
-elseif ProgramType(3) % Seizure Detection or characteris all data selected
+else ProgramType(3) % Seizure Detection or characteris all data selected
     Time_adjustment =0;
     interval_duration = 150; % Specify data segment lengths to analyse
     Number_of_windows = floor(StudyLength/interval_duration); % Specify number of windows to analyse. Notice that by doing this the last data segment < interval_duration in length is lost
