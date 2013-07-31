@@ -60,8 +60,8 @@ for Sheet =1:length(ExcelSheets)
         end
     end
 end
-Spreadsheet_Name = ['ProcessDetected_AnimalNumber ',int2str(Directory(1).Animal),' SD',int2str(Start.Day),'CD',int2str(Start.Day),'_',int2str(Start.Month),'_',int2str(Start.Year),'.xls']; % Specify name for spreadsheet
-Spreadsheet_Name_Raw = ['RawProcessDetected_AnimalNumber ',int2str(Directory(1).Animal),' SD',int2str(Start.Day),'CD',int2str(Start.Day),'_',int2str(Start.Month),'_',int2str(Start.Year),'.xls']; % Specify name for spreadsheet
+Spreadsheet_Name = ['ProcessDetected_AnimalNumber ',int2str(ExcelSheets(1).Animal),' SD',int2str(Start.Day),'CD',int2str(Start.Day),'_',int2str(Start.Month),'_',int2str(Start.Year),'.xls']; % Specify name for spreadsheet
+Spreadsheet_Name_Raw = ['RawProcessDetected_AnimalNumber ',int2str(ExcelSheets(1).Animal),' SD',int2str(Start.Day),'CD',int2str(Start.Day),'_',int2str(Start.Month),'_',int2str(Start.Year),'.xls']; % Specify name for spreadsheet
 Column_Title = {'Padding Ampltide Mean','Padding Zero Crossing Mean','Padding Line Length Mean',...
                 'Seizure Ampltide Mean','Seizure Zero Crossing Mean','Seizure Line Length Mean',...
                 'Post Ictal Ampltide Mean','Post Ictal Zero Crossing Mean','Post Ictal Line Length Mean'};

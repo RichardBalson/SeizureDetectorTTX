@@ -85,7 +85,9 @@ AmplitudeString= uicontrol('style','text','parent',h,'units','normalized','posit
 
 PaddingString = uicontrol('style','text','parent',h,'units','normalized','position',[0.4 0.6 0.25 0.04],'string','Padding for annotations (10)','Visible','off');
 
-PostprocessString = uicontrol('style','text','parent',h,'units','normalized','position',[0.03 0.55 0.35 0.04],'string','Characterised seizures Excel file','Visible','off');
+% SeizureSplit = uicontrol('style','text','parent',h,'units','normalized','position',[0.03 0.55 0.35 0.04],'string','Split Seizure','Visible','off');
+
+% PostprocessString = uicontrol('style','text','parent',h,'units','normalized','position',[0.03 0.55 0.35 0.04],'string','Characterised seizures Excel file','Visible','off');
 % Edit boxes
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -158,7 +160,7 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',h,'units','normalize
             set(Save_data,'Value',0);
             set(Post_process_characterise,'Value',0);
             set(Post_process_annotate,'Value',0,'Visible','off');
-            set(PostprocessString,'Visible','Off');
+%             set(PostprocessString,'Visible','Off');
             set(Seizure_Characterise,'Value',0) % Uncheck Seizure Characterise
             set(Characterise_all_data,'Value',0) % Uncheck Characterise all data
             set(EEGSort,'Visible','Off') % Turn off EEG sort filepath text
@@ -199,7 +201,7 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',h,'units','normalize
             set(Compare_Seizures,'Value',0);
             set(Post_process_characterise,'Value',0);
             set(Post_process_annotate,'Visible','On');
-            set(PostprocessString,'Visible','Off');
+%             set(PostprocessString,'Visible','Off');
         else % Seizure_Characterise unchecked
             set(PaddingString,'Visible','Off'); % Specify padding as off
             set(Padding,'Visible','Off'); % Specify padding as off
@@ -238,7 +240,7 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',h,'units','normalize
             set(Compare_Seizures,'Value',0);
             set(Post_process_characterise,'Value',0);
             set(Post_process_annotate,'Visible','Off');
-            set(PostprocessString,'Visible','Off');
+%             set(PostprocessString,'Visible','Off');
         end
     end
 
@@ -246,14 +248,14 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',h,'units','normalize
 
     function ProcessData(varargin)
         if get(Post_process_characterise,'Value')
-            set(PostprocessString,'Visible','On');
+%             set(PostprocessString,'Visible','On');
             set(EEGSort,'Visible','off');
             set(PaddingString,'Visible','On'); % Specify padding as on
             set(Padding,'Visible','On'); % Specify padding as on
             set(Seizure_Characterise,'Value',0) % Uncheck Seizure Characterise
-            set(EEG_Seizure_times_data_path,'Visible','On')% Turn on EEG sort filepath edit box
+%             set(EEG_Seizure_times_data_path,'Visible','On')% Turn on EEG sort filepath edit box
             set(Seizure_Detection,'Value',0) % Uncheck Seizure Detection
-            set(Browse_Annotate_EEG,'Visible','On') % Turn on browse EEG anotate file push button
+%             set(Browse_Annotate_EEG,'Visible','On') % Turn on browse EEG anotate file push button
             set(Characterise_all_data,'Value',0) % Uncheck Characterise all data
             set(Save_data,'Visible','Off') % Turn off plot features check box
             set(Plot_features,'Visible','Off','Value',0) % Turn on plot features check box
@@ -269,7 +271,7 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',h,'units','normalize
             set(Padding,'Visible','Off'); % Specify padding as on
             set(EEG_Seizure_times_data_path,'Visible','Off')% Turn on EEG sort filepath edit box
             set(Browse_Annotate_EEG,'Visible','Off') % Turn on browse EEG anotate file push button
-            set(PostprocessString,'Visible','Off');
+%             set(PostprocessString,'Visible','Off');
         end
     end
 

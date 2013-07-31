@@ -259,16 +259,20 @@ end
 if DetectorSettings.ProcessData
     if ProgramType(2)==1
         for k = Channels
-        Directory = dir(['AnimalNumber ',int2str(k),'*SD',int2str(Start.Day),'*.xls']);
-        if ~isempty(Directory)
-        Directory(1:end).Animal=k;
-        ProcessData(Directory,Start);
-        end
+            Directory = dir(['AnimalNumber ',int2str(k),'*SD',int2str(Start.Day),'*.xls']);
+            if ~isempty(Directory)
+                Directory(1).Animal=k;
+                ProcessData(Directory,Start);
+            end
         end
     elseif DetectorSettings.ProcessData
-        Spreadsheet_Name = DetectorSettings.ExcelFilepath;
-        Start.Padding = str2double(DetectorSettings.Padding);
-        ProcessExcelData(Spreadsheet_Name,Start);
+        for k = Channels
+            Directory = dir(['AnimalNumber ',int2str(k),'*SD',int2str(Start.Day),'*.xls']);
+            if ~isempty(Directory)
+                Directory(1:end).Animal=k;
+                ProcessData(Directory,Start);
+            end
+        end
     end
 end
 
