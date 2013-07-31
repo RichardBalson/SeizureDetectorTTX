@@ -144,6 +144,22 @@ if Seizure(end) ==1
     Seizure_end_time_sec(m) = Window_time+Seizure_time(end);
 end
 
+Seizure_ref_time = [Seizure_start_time_sec-Window_time Seizure_end_time_sec-Seizure_start_time_sec]; % Specify window normalised seizure start time and duration
+if any(Seizure_ref_time(:,2)<=(Seizure_time(2)-Seizure_time(1))
+    count =0;
+    for k =1:size(Seizure_ref_time,2)
+        if ~((Seizure_ref_time(k,2) + Seizure_ref_time(k,1) == Seizure_time(end)) || (Seizure_ref_time(k,1)==Seizure_time(1)))
+            count = count+1;
+            index(count) =k;
+        end
+    end
+    if ~isempty(index)
+        Seizure_ref_time(index)=[];
+        Seizure_end_time_sec(index)=[];
+        Seizure_start_time_sec(index) =[];
+    end
+end
+
 if m >0 % Check if a seizure end was detected
     for p =1:m % Loop through number of seizure ends
         Hours_end = Seizure_end_time_sec(p)/3600; % Determine the hour time for the seizure end

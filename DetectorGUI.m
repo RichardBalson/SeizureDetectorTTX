@@ -15,7 +15,7 @@ clear
 clc
 close all
 
-addpath(genpath('..\GUI1'));
+addpath(genpath('..\Seizure Detector'));
 
 % Create structure used for setting specified by GUI.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

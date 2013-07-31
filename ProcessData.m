@@ -3,7 +3,7 @@ function ProcessData(Spreadsheet,Start)
 % This function Processes data from aan excel file that has the data for
 % characterised seizures
 
-[~,Sheetnames] = xlsfinfo(Spreadsheet);
+[~,Sheetnames] = xlsfinfo(Spreadsheet); % Find out details for specified worksheet
 Seizure_number =0;
 for k = 1:length(Sheetnames)
     if strcmp(Sheetnames{k}(1:5),'Seizu')
