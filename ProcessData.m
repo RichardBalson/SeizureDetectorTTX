@@ -3,6 +3,10 @@ function ProcessData(ExcelSheets,Start)
 % This function Processes data from aan excel file that has the data for
 % characterised seizures
 
+% Next Edit
+% Add code to wriute split seizure data to excel file, and make a user
+% input to specify epochs
+
 Epochs =4;
 for Sheet =1:length(ExcelSheets)
     [~,Sheetnames] = xlsfinfo(ExcelSheets(Sheet).name); % Find out details for specified worksheet
