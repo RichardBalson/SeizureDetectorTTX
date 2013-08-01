@@ -160,11 +160,12 @@ if any(Seizure_ref_time(:,2)<=delta)
         Seizure_ref_time(index)=[];
         Seizure_end_time_sec(index)=[];
         Seizure_start_time_sec(index) =[];
+        m = m-length(index);
+        n = n-length(index);
     end
 end
 
-m = m-length(index);
-n = n-length(index);
+
 
 if m >0 % Check if a seizure end was detected
     for p =1:m % Loop through number of seizure ends
