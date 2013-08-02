@@ -27,7 +27,7 @@ ProgramType = [0 0 0];% Index 1 Detector, 2 characterise seizures, 3 characteris
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % GUI creation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+global h;
 h = figure('Name','Seizure Detector');
 
 % Check boxes

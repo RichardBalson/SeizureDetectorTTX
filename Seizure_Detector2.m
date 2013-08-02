@@ -108,8 +108,8 @@ function [Seizure_start, Seizure_end]= Start_end_time(Seizure,Seizure_time,~,Hou
 % given the study starttime and the binary seizure matrix and its
 % corresponding times
 
-Seizure_start ={0}; % Initialise a zero matrix
-Seizure_end ={0};
+Seizure_start =[]; % Initialise a zero matrix
+Seizure_end =[];
 
 Window_time = (Hours*60+minutes)*60+seconds + Window_start_time; % Determine the time that the current data starts at
 load Seizure Seizure_init % load previous information about seizures in the last analysed data window
@@ -175,8 +175,9 @@ if m >0 % Check if a seizure end was detected
         if (Hours_end >24) % Check if time is greater than 24 hour clock
             Hours_end = Hours_end-24; % Adjust time accordingly
         end
-        Seizure_end{:,p} = [int2str(floor(Hours_end)),':',int2str(floor(Minutes_end)),':',int2str(floor(Seconds_end))]; % Create time string for seizure end
+        Seizure_endT{:,p} = [int2str(floor(Hours_end)),':',int2str(floor(Minutes_end)),':',int2str(floor(Seconds_end))]; % Create time string for seizure end
     end
+    Seizure_end = Seizure_endT;
 end
 
 if n >0 % Check if a seizure start was detected
@@ -187,9 +188,12 @@ if n >0 % Check if a seizure start was detected
         if (Hours_end >24)% Check if time is greater than 24 hour clock
             Hours_end = Hours_end-24;% Adjust time accordingly
         end
-        Seizure_start{:,p} = [int2str(floor(Hours_end)),':',int2str(floor(Minutes_end)),':',int2str(floor(Seconds_end))];% Create time string for seizure start
+        Seizure_startT{:,p} = [int2str(floor(Hours_end)),':',int2str(floor(Minutes_end)),':',int2str(floor(Seconds_end))];% Create time string for seizure start
     end
+    Seizure_start = Seizure_startT;
 end
+
+
 
 % Seizure_init = Seizure(end); % Specify last seizure status as intial seizure status for next data window
 % save Seizure Seizure_init % save Seizure_init for future use
