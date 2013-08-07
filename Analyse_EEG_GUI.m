@@ -39,15 +39,24 @@ Start.AMPM = StartDateTime(end-1:end);
 
 if ~strcmp(DetectorSettings.Channels,'all')
     for k =1:ceil(length(DetectorSettings.Channels)/2)
-        channel(k) = str2double(DetectorSettings.Channels(1+2*(k-1)));
+        ChannelT(k) = str2double(DetectorSettings.Channels(1+2*(k-1)));
     end
 else
-    channel=1:Number_of_animals;
+    ChannelT= ChannelLength; 
 end
-Channels =[];
-for k = 1:length(channel)
-    if ChannelLength(channel(k)) ~=0;
-        Channels =cat(2,Channels,channel(k));
+
+
+if ~strcmp(DetectorSettings.Animals,'all')
+    for k =1:ceil(length(DetectorSettings.Animals)/2)
+        AnimalT(k) = str2double(DetectorSettings.Animals(1+2*(k-1)));
+    end
+else
+    AnimalT=1:Number_of_animals;
+end
+AnimalN =[];
+for k = 1:length(AnimalT)
+    if ChannelLength(AnimalT(k)) ~=0;
+        AnimalN =cat(2,AnimalN,AnimalT(k));
     end
 end
 % ChannelLength is a Number_of_animalsx1 vector where each element
@@ -66,6 +75,7 @@ if any(ProgramType)
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     window_length =1; % Units of seconds, specify the length of windows used for analysis, this setting is generally used for seizure detection
     if ProgramType(1) ==1 % Seizure Detection is specified
+        Start.minSeizureD = str2num(DetectorSettings.MinSeizure);
         LLthreshold =str2num(DetectorSettings.LLThres); % Get Line length threshold
         Ampthreshold =str2num(DetectorSettings.AmpThres); % Get amplitude threshold
         window_length =5; % Units of seconds, specify the length of windows used for analysis, this setting is generally used for seizure detection
@@ -137,7 +147,7 @@ if any(ProgramType)
     % Create a structure to store seizure detection data
     Animal=repmat(struct('SeizureStartT',{{'0'}},'SeizureEndT',{{'0'}}),Number_of_animals,1);
     
-    for k= Channels % Loop through number of animals
+    for k= AnimalN % Loop through number of animals
         
         %     if ChannelLength(k) ==0 % Check if the specified cage was not used in recordings
         %         continue % Start next loop, or increase the caage number
@@ -187,21 +197,25 @@ if any(ProgramType)
             clear All_Channel_Data % Clear variable containing all data for a particular animal and window
             
             Channel_number= Channel_number_base; % Return channel number to original base for each new window for specifed animal
-            
-            for m = 1:round(ChannelLength(k)) % Loop through number of channels for each animal
+            if size(ChannelT,2) >1
+                ChannelSelect = ChannelT;
+            else
+                ChannelSelect = 1:round(ChannelLength(k));
+            end
+            for m = ChannelSelect % Loop through number of channels for each animal
                 
                 clear Data_out dataIn % Clear variables containing current animal, channel and window data
                 
-                Channel_number = Channel_number+1; % Increase the channel number needed to be analysed
+                Channel_numberT = Channel_number+m; % Increase the channel number needed to be analysed
                 
-                [Data_out dataIn] = Profusion_Ext_Filt_GUI(StartTime, Duration,Decimate, band_coeff,Channel_number,Time_adjustment); % Extract data from profusion, Data_out is filtered and dataIn is not.
+                [Data_out dataIn] = Profusion_Ext_Filt_GUI(StartTime, Duration,Decimate, band_coeff,Channel_numberT,Time_adjustment); % Extract data from profusion, Data_out is filtered and dataIn is not.
                 if DetectorSettings.SaveData
                     save(['Animal',int2str(k),'Seizure',int2str(j),'Channel',int2str(m),'.mat'],'dataIn','Data_out');
                 end
                 
                 if m ==1 % Check if currently looking at first channel
                     
-                    All_Channel_Data = zeros(length(Data_out),ChannelLength(k)); % Intialise variable to store all channels for the particular animal considered
+                    All_Channel_Data = zeros(length(Data_out),length(ChannelSelect)); % Intialise variable to store all channels for the particular animal considered
                     
                 end
                 if ~isempty(Data_out) % Check if data was extracted from profusion
@@ -258,7 +272,7 @@ if any(ProgramType)
 end
 if DetectorSettings.ProcessData
     if ProgramType(2)==1
-        for k = Channels
+        for k = AnimalN
             Directory = dir(['AnimalNumber ',int2str(k),'*SD',int2str(Start.Day),'*.xls']);
             if ~isempty(Directory)
                 Directory(1).Animal=k;
@@ -266,7 +280,7 @@ if DetectorSettings.ProcessData
             end
         end
     elseif DetectorSettings.ProcessData
-        for k = Channels
+        for k = AnimalN
             Directory = dir(['AnimalNumber ',int2str(k),'*SD',int2str(Start.Day),'*.xls']);
             if ~isempty(Directory)
                 Directory(1:end).Animal=k;

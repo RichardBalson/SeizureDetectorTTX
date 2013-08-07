@@ -33,7 +33,7 @@ load Seizure Seizure_init % Load information about seizures from the previous wi
 
 
 if (((~isempty(find(Seizure ==1,1))) || (Seizure_init == 1)) && ((~isempty(find(Seizure==0,1)) || (Seizure_init == 0)))) % Determine if a change has occured in the detected seizure status, ie a change from 1 to zero accross windows or any change in variable seizure in current window
-    [Seizure_start, Seizure_end]= Start_end_time(Seizure,Seizure_time,sampling_frequency,Start.Hours,Start.Minutes,Start.Seconds,Window_start_time); % Create a time string for the detected seizure starts and ends
+    [Seizure_start, Seizure_end]= Start_end_time(Seizure,Seizure_time,sampling_frequency,Start,Window_start_time); % Create a time string for the detected seizure starts and ends
 else % No seizures detected
     Seizure_start=[];
     Seizure_end=[]; % Empty strings for both fields
@@ -103,7 +103,7 @@ save Features Line_mean Mean_number Amp_mean % Save all feature means for future
 
 
 
-function [Seizure_start, Seizure_end]= Start_end_time(Seizure,Seizure_time,~,Hours,minutes,seconds,Window_start_time)
+function [Seizure_start, Seizure_end]= Start_end_time(Seizure,Seizure_time,~,Start,Window_start_time)
 % This function deermines when seizures have occured in a date time format
 % given the study starttime and the binary seizure matrix and its
 % corresponding times
@@ -111,7 +111,7 @@ function [Seizure_start, Seizure_end]= Start_end_time(Seizure,Seizure_time,~,Hou
 Seizure_start =[]; % Initialise a zero matrix
 Seizure_end =[];
 
-Window_time = (Hours*60+minutes)*60+seconds + Window_start_time; % Determine the time that the current data starts at
+Window_time = (Start.Hours*60+Start.Minutes)*60+Start.Seconds + Window_start_time; % Determine the time that the current data starts at
 load Seizure Seizure_init % load previous information about seizures in the last analysed data window
 n=0; % Set te number of seizure ends to zero
 m=0; % Set the number of seizure starts to zero
@@ -145,7 +145,7 @@ if Seizure(end) ==1
 end
 
 Seizure_ref_time = [Seizure_start_time_sec'-Window_time Seizure_end_time_sec'-Seizure_start_time_sec']; % Specify window normalised seizure start time and duration
-delta = Seizure_time(2)-Seizure_time(1);
+delta = Start.minSeizureD;
 if any(Seizure_ref_time(:,2)<=delta)
     count =0;
     for k =1:size(Seizure_ref_time,1)
