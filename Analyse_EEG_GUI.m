@@ -213,9 +213,9 @@ if any(ProgramType)
                 
                 clear Data_out dataIn % Clear variables containing current animal, channel and window data
                 
-                Channel_numberT = Channel_number+m; % Increase the channel number needed to be analysed
+                Channel_numberTemp = Channel_number+m; % Increase the channel number needed to be analysed
                 
-                [Data_out dataIn] = Profusion_Ext_Filt_GUI(StartTime, Duration,Decimate, band_coeff,Channel_numberT,Time_adjustment); % Extract data from profusion, Data_out is filtered and dataIn is not.
+                [Data_out dataIn] = Profusion_Ext_Filt_GUI(StartTime, Duration,Decimate, band_coeff,Channel_numberTemp,Time_adjustment); % Extract data from profusion, Data_out is filtered and dataIn is not.
                 if DetectorSettings.SaveData
                     save(['Animal',int2str(k),'Seizure',int2str(j),'Channel',int2str(m),'.mat'],'dataIn','Data_out');
                 end
