@@ -89,9 +89,9 @@ AmplitudeString= uicontrol('style','text','parent',h,'units','normalized','posit
 
 PaddingString = uicontrol('style','text','parent',h,'units','normalized','position',[0.4 0.6 0.25 0.04],'string','Padding for annotations (10)','Visible','off');
 
-ChannelText = uicontrol('style','text','parent',h,'units','normalized','position',[0.4 0.6 0.25 0.04],'string','Select Channels (1,2,3,4)','Visible','off');
+ChannelText = uicontrol('style','text','parent',h,'units','normalized','position',[0.7 0.7 0.29 0.08],'string','Select Channels (1,2,3,4)','Visible','off');
 
-DurationText = uicontrol('style','text','parent',h,'units','normalized','position',[0.7 0.7 0.29 0.08],'string','Specify Minimum Seizure Duration (5s)','Visible','off');
+DurationText = uicontrol('style','text','parent',h,'units','normalized','position',[0.7 0.55 0.29 0.08],'string','Specify Minimum Seizure Duration (5s)','Visible','off');
 
 % SeizureSplit = uicontrol('style','text','parent',h,'units','normalized','position',[0.03 0.55 0.35 0.04],'string','Split Seizure','Visible','off');
 
@@ -125,9 +125,9 @@ AmplitudeThreshold = uicontrol('style','edit','parent',h,'units','normalized','p
 % threshold specified
 Padding = uicontrol('style','edit','parent',h,'units','normalized','position',[0.4 0.55 0.25 0.04],'Visible','off');
 
-Channel = uicontrol('style','edit','parent',h,'units','normalized','position',[0.4 0.55 0.25 0.04],'Visible','off');
+Channel = uicontrol('style','edit','parent',h,'units','normalized','position',[0.7 0.65 0.29 0.04],'Visible','off');
 
-SeizureDuration = uicontrol('style','edit','parent',h,'units','normalized','position',[0.7 0.65 0.29 0.04],'Visible','off');
+SeizureDuration = uicontrol('style','edit','parent',h,'units','normalized','position',[0.7 0.55 0.29 0.04],'Visible','off');
 
 % PushButton
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
