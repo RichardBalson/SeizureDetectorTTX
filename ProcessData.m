@@ -58,9 +58,8 @@ for Sheet =1:length(ExcelSheets)
             end
         end
     end
-end
-Spreadsheet_Name = ['ProcessDetected_AnimalNumber ',int2str(ExcelSheets(1).Animal),' SD',int2str(Start.Day),'CD',int2str(Start.Day),'_',int2str(Start.Month),'_',int2str(Start.Year),'.xls']; % Specify name for spreadsheet
-Spreadsheet_Name_Raw = ['RawProcessDetected_AnimalNumber ',int2str(ExcelSheets(1).Animal),' SD',int2str(Start.Day),'CD',int2str(Start.Day),'_',int2str(Start.Month),'_',int2str(Start.Year),'.xls']; % Specify name for spreadsheet
+    Spreadsheet_Name = ['AProcess',ExcelSheets(Sheet).name]; % Specify name for spreadsheet
+Spreadsheet_Name_Raw = ['AProcessR',ExcelSheets(Sheet).name]; % Specify name for spreadsheet
 Column_Title = {'Padding Ampltide Mean','Padding Zero Crossing Mean','Padding Line Length Mean',...
     'Seizure Ampltide Mean','Seizure Zero Crossing Mean','Seizure Line Length Mean',...
     'Post Ictal Ampltide Mean','Post Ictal Zero Crossing Mean','Post Ictal Line Length Mean'};
@@ -98,7 +97,7 @@ end
 if Epochs >1
     clear Columns
     DataExcel =[];
-    Spreadsheet_Name_Raw = ['SplitSeizureProcessDetected_AnimalNumber ',int2str(ExcelSheets(1).Animal),' SD',int2str(Start.Day),'CD',int2str(Start.Day),'_',int2str(Start.Month),'_',int2str(Start.Year),'.xls']; % Specify name for spreadsheet
+    Spreadsheet_Name_Raw = ['ASeizureSplit',ExcelSheets(Sheet).name]; % Specify name for spreadsheet
     for k =1:Epochs
         DataExcel = cat(2,DataExcel,SeizureSplit(:,:,:,:,k));
     end
@@ -119,6 +118,8 @@ if Epochs >1
         end
     end  
 end
+end
+
 
 function MeanMinMax = CreateMat(Data,Epochs,Index1,Index2,Indices)
 
