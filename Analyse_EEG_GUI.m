@@ -276,22 +276,49 @@ if any(ProgramType)
         end    
     end
 end
-if DetectorSettings.ProcessData
+if DetectorSettings.ProcessAnnotated
+    Epochs = str2num(DetectorSettings.SplitSeizure);
     if ProgramType(2)==1
         for k = AnimalN
             Directory = dir(['AnimalNumber ',int2str(k),'*SD',int2str(Start.Day),'*.xls']);
             if ~isempty(Directory)
                 Directory(1).Animal=k;
-                ProcessData(Directory,Start);
+                ProcessData(Directory,Start,Epochs);
             end
         end
-    elseif DetectorSettings.ProcessData
+    else
         for k = AnimalN
             Directory = dir(['AnimalNumber ',int2str(k),'*SD',int2str(Start.Day),'*.xls']);
             if ~isempty(Directory)
-                Directory(1:end).Animal=k;
-                ProcessData(Directory,Start);
+                Directory(1).Animal=k;
+                ProcessData(Directory,Start,Epochs);
             end
+        end
+    end
+end
+if DetectorSettings.CompareS
+    Seizure_Compare = ReadEEGExcel(DetectorSettings.ExcelFilepath,'Matlab',Number_of_animals,Start.Day,0);
+    for k =1:size(Seizure_Compare,3)  %SeizuresDetected_AnimalNumber 1 SD4CD4_8_2013
+        Directory = dir(['SeizuresDetected*Number ',int2str(k),'*SD',int2str(Start.Day),'*.xls']);
+        j =0;
+        Temp =0;
+        while j<length(Directory)
+            if ~isempty(strfind(Directory(j).name,['CD',int2str(Start.Day+Temp)]))
+                j = j+1;
+                Days = Temp+1;
+                DetectorDataT = xlsread(Directory(j).name,'Seizure Start and End');
+                DetectorData(:,:,Days) = reshape(datestr(DetectorDataT,13),size(DetectorDataT,1),2);
+            end
+            Temp = Temp+1;
+        end
+        
+        Time_adjustmentT = ((Start.Hours)*60+Start.Minutes)*60 + Start.Seconds;
+        Temp = Seizure_Compare(:,:,k);
+        Temp(Temp<Time_adjustmentT) = Temp(Temp<Time_adjustmentT)+Day_duration;
+        Annotated_data = zeros(size(Seizure_Compare,1),size(Seizure_Compare,2),2,inc);
+        for Day = 1:Days
+            Annotated_data = Temp(Temp(:,1)>Day_duration*(Day-1) & Temp(:,1)<Day_duration*(Day),:);
+            CompareSeizures(Start,k,Annotated_data,DetectorData,Day);
         end
     end
 end
