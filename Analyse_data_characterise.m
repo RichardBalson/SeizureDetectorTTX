@@ -133,8 +133,8 @@ for k = 1:Number_of_windows % Loop through number of windows
         Amplitude((k-1)*Splits_per_window+m) = sum(abs(data(index:index1,:)))/(WindowSamples); % Sum the absoltue value of all amplitude in the current window and divide by number of samples
         Line_length((k-1)*Splits_per_window+m) = sum(abs(data(index+1:index1,:)-data(index:index1-1,:)))*sample_rate/(WindowSamples-1); % Sum the absolute value of all line length samples in the current window
         % to get the mean of each feature over the current feature window
-       signum = sign(data(index:index1)); % Determine sign of each data segment
-       Zero_crossings((k-1)*Splits_per_window+m) = sum(diff(signum~=0)); % Determine number of changes in sign in data
+       signum = sign(data(index:index1)-Amplitude((k-1)*Splits_per_window+m)); % Determine sign of each data segment
+       Zero_crossings((k-1)*Splits_per_window+m) = sum(diff(signum)~=0); % Determine number of changes in sign in data
 %         Crossings_count=0;
 %         for j = 1:SplitSamples-1
 %             if (((data((k-1)*WindowSamples+(m-1)*SplitSamples+j) >0) && (data((k-1)*WindowSamples+(m-1)*SplitSamples+j+1)<0)) ...
