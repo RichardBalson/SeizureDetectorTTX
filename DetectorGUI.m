@@ -46,6 +46,8 @@ Characterise_all_data =uicontrol('style','checkbox','parent',GUIFigure,'units','
 
 Post_process_characterise = uicontrol('style','checkbox','parent',GUIFigure,'units','normalized','position',[0.4 0.6 0.28 0.04],'string','Process Characterised Data','callback',@ProcessData);
 
+Batch_process = uicontrol('style','checkbox','parent',GUIFigure,'units','normalized','position',[0.03 0.1 0.29 0.04],'string','Process Multiple Files','Visible','on');
+
 % Conditional Check boxes
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -164,13 +166,53 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',GUIFigure,'units','n
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     function BrowseEEG(varargin)
-        EEG_file_path = uigetdir;
-        set(EEG_data_path,'string',EEG_file_path)
+        EEG = guidata(GUIFigure);
+        k=0;
+        EEG_files ={};
+        EEG_file_path =1;
+        if get(Batch_process,'value')
+            while EEG_file_path ~=0
+                if k>0
+                    EEG_files{k} = {EEG_file_path};
+                end
+                k= k+1;
+                EEG_file_path = uigetdir;
+            end
+            set(EEG_data_path,'string',EEG_files{k-1})
+        else
+            EEG_file_path = uigetdir;
+            if EEG_file_path ~=0
+                EEG_files ={EEG_file_path};
+                set(EEG_data_path,'string',EEG_files)
+            end
+        end
+        EEG.Data = EEG_files;
+        guidata(EEG_data_path,EEG);
     end
 
     function BrowseAnnotate(varargin)
-        [EEG_annotate_file path] = uigetfile('.xlsx');
-        set(EEG_Seizure_times_data_path,'string',strcat(path,EEG_annotate_file))
+        EEG = guidata(GUIFigure);
+                k=0;
+        EEG_Annotate_files ={};
+        EEG_Annotate_file_path =1;
+        if get(Batch_process,'value')
+            while EEG_Annotate_file_path ~=0
+                if k>0
+                    EEG_Annotate_files{k} = {strcat(pathT,EEG_Annotate_file_path)};
+                end
+                k= k+1;
+                [EEG_Annotate_file_path pathT] = uigetfile('.xlsx');
+            end
+            set(EEG_Seizure_times_data_path,'string',EEG_Annotate_files{k-1})
+        else
+            [EEG_Annotate_file_path pathT] = uigetfile('.xlsx');
+            if EEG_Annotate_file_path ~=0
+                EEG_Annotate_files = {strcat(pathT,EEG_Annotate_file_path)};
+                set(EEG_Seizure_times_data_path,'string',EEG_Annotate_files) 
+            end
+        end
+        EEG.Annotate = EEG_Annotate_files;
+        guidata(EEG_data_path,EEG);
     end
 
     function DetectCHK(varargin)
@@ -346,6 +388,8 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',GUIFigure,'units','n
         ProgramType = [0 0 0];
         clear filepath LLThres AmpThres Excel_data_filepath % CLear all temporary variables at start of callback
         %         set(PushStart,'Enable','Off') % Disable Push button during analysis
+        Gui = guidata(EEG_data_path);
+        guidata(EEG_data_path,'');
         set(ErrorMessage,'Visible','Off') % Turn off error message edit box
         set(ErrorMessage,'string','Analysis Started') % Set error message
         set(ErrorMessage,'Visible','On') % Display error message
@@ -355,7 +399,7 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',GUIFigure,'units','n
             set(ErrorMessage,'Visible','On') % Show error message
             return % End callback
         else
-            DetectorSettings.EEGFilepath=filepath; % Set detector settings with filepath specified
+            DetectorSettings.EEGFilepath=Gui.Data; % Set detector settings with filepath specified
         end
         if get(Seizure_Detection,'Value') % Check if Seizure_Detection is checked
             LLThres = get(LineLengthThreshold,'string'); % Get value in edit box specifying threshold for line length
@@ -382,7 +426,7 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',GUIFigure,'units','n
                     set(ErrorMessage,'Visible','On') % Show error message
                     return % End callback
                 else
-                    DetectorSettings.ExcelFilepath =  Excel_data_filepath; % Set filepath for excel file in detector settings
+                    DetectorSettings.ExcelFilepath =  Gui.Annotate; % Set filepath for excel file in detector settings
                 end
             end
             if get(Select_Channels,'Value')
@@ -412,7 +456,7 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',GUIFigure,'units','n
                 set(ErrorMessage,'Visible','On') % Show error message
                 return % End callback
             else
-                DetectorSettings.ExcelFilepath = Excel_data_filepath; % Set filepath for excel file in detector settings
+                DetectorSettings.ExcelFilepath = Gui.Annotate; % Set filepath for excel file in detector settings
             end
             PaddingStr = get(Padding,'string');
             if ~isempty(PaddingStr)
@@ -459,9 +503,13 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',GUIFigure,'units','n
         else
             DetectorSettings.Animals =ChannelsRequested;
         end
-        Analyse_EEG_GUI(DetectorSettings,ProgramType); % Begin analysis of data
+        err = Analyse_EEG_GUI(DetectorSettings,ProgramType); % Begin analysis of data
+        if err
+            set(ErrorMessage,'string','Number of files does not match') % Inform user that analysis is finished
+        else
         set(PushStart,'Enable','On') % Enable push button
         set(ErrorMessage,'string','Analysis Finished') % Inform user that analysis is finished
+        end
     end
 end
 
