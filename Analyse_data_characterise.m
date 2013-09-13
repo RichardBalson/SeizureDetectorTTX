@@ -12,6 +12,8 @@ function Analyse_data_characterise(data,window_length,frequency_bands,sampling_f
 % Beginning of function
 % ~~~~~~~~~~~~~~~~~~~~~
 
+Zero_crossing_threshold =4;
+
 nfeatures = [0 1 1 1]; % Specify features to plot nfeatures(1-4) correspond to Zero crossings, freqeuncy, amplitude and line length respectively
 
 Split_length =0.5; % Specify feature window length over which features are averaged
@@ -32,7 +34,7 @@ for m = 1:size(data,2) % Loop through channels
     
     splits = floor(EEG_time/window_length); % Determine number of data splits reuqired given the total
     
-    [Zero_crossings Amplitude Line_length Line_time] = FeatureExtraction(data(:,m),window_length,sampling_frequency,Split_length); % Extract features from data
+    [Zero_crossings Amplitude Line_length Line_time] = FeatureExtraction(data(:,m),window_length,sampling_frequency,Split_length,Zero_crossing_threshold); % Extract features from data
     
     if PlotFeatures % Check if features need to be plotted
         data_split = zeros(window_samples,chs,splits); % Initialse split data matrix
@@ -114,7 +116,7 @@ end
 
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-function [Zero_crossings Amplitude Line_length Line_time] = FeatureExtraction(data,windowlength,sample_rate,Split_length)
+function [Zero_crossings Amplitude Line_length Line_time] = FeatureExtraction(data,windowlength,sample_rate,Split_length,Zero_crossing_threshold)
 % This function determines features over the specified windows
 
 WindowSamples = windowlength*sample_rate; % Determine the number of window samples
@@ -132,21 +134,12 @@ for k = 1:Number_of_windows % Loop through number of windows
         index1 = (k-1)*WindowSamples+(m)*SplitSamples; % Index for last sample in window
         Amplitude((k-1)*Splits_per_window+m) = sum(abs(data(index:index1,:)))/(WindowSamples); % Sum the absoltue value of all amplitude in the current window and divide by number of samples
         Line_length((k-1)*Splits_per_window+m) = sum(abs(data(index+1:index1,:)-data(index:index1-1,:)))*sample_rate/(WindowSamples-1); % Sum the absolute value of all line length samples in the current window
-        % to get the mean of each feature over the current feature window
-       signum = sign(data(index:index1)); % Determine sign of each data segment
-       Zero_crossings((k-1)*Splits_per_window+m) = sum(diff(signum~=0)); % Determine number of changes in sign in data
-%         Crossings_count=0;
-%         for j = 1:SplitSamples-1
-%             if (((data((k-1)*WindowSamples+(m-1)*SplitSamples+j) >0) && (data((k-1)*WindowSamples+(m-1)*SplitSamples+j+1)<0)) ...
-%                     || ((data((k-1)*WindowSamples+(m-1)*SplitSamples+j) <0) && (data((k-1)*WindowSamples+(m-1)*SplitSamples+j+1)>0)))
-%                 Crossings_count = Crossings_count +1;
-%             end
-%             Sum_Amplitude = Sum_Amplitude + abs(data((k-1)*WindowSamples+(m-1)*SplitSamples+j+1,:));
-%             Sum_line = Sum_line + abs((data((k-1)*WindowSamples+(m-1)*SplitSamples+j+1,:)-data((k-1)*WindowSamples+(m-1)*SplitSamples+j,:)))*sample_rate;
-%         end
-%         Zero_crossings((k-1)*Splits_per_window+m) = Crossings_count;
-%         Amplitude((k-1)*Splits_per_window+m) = Sum_Amplitude/(WindowSamples-1);
-%         Line_length((k-1)*Splits_per_window+m) = Sum_line/(WindowSamples-1);
+    end
+    for m = 1:Splits_per_window % Loop through number of feture windows
+        index = (k-1)*WindowSamples+(m-1)*SplitSamples+1; % Index for first sample in window
+        index1 = (k-1)*WindowSamples+(m)*SplitSamples; % Index for last sample in window
+        signum = sign(data(index:index1)-median(Amplitude(1:Splits_per_window))*Zero_crossing_threshold); % Determine sign of each data segment compared to a threshold value
+        Zero_crossings((k-1)*Splits_per_window+m) = sum(diff(signum)~=0); % Determine number of changes in sign in data
     end
 end
 

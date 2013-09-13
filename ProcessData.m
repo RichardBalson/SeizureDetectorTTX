@@ -58,8 +58,8 @@ for Sheet =1:length(ExcelSheets)
             end
         end
     end
-    Spreadsheet_Name = ['AProcess',ExcelSheets(Sheet).name]; % Specify name for spreadsheet
-Spreadsheet_Name_Raw = ['AProcessR',ExcelSheets(Sheet).name]; % Specify name for spreadsheet
+    Spreadsheet_Name = ['AP',ExcelSheets(Sheet).name]; % Specify name for spreadsheet
+Spreadsheet_Name_Raw = ['APR',ExcelSheets(Sheet).name]; % Specify name for spreadsheet
 Column_Title = {'Padding Ampltide Mean','Padding Zero Crossing Mean','Padding Line Length Mean',...
     'Seizure Ampltide Mean','Seizure Zero Crossing Mean','Seizure Line Length Mean',...
     'Post Ictal Ampltide Mean','Post Ictal Zero Crossing Mean','Post Ictal Line Length Mean'};

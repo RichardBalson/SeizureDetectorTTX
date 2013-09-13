@@ -23,9 +23,17 @@ if ((length(EEGDir) ~= length(Annotate_dir)) && ProgramType(2))
     return
 end
 for direct = 1:length(EEGDir)
-    DetectorSettings.EEGFilepath = EEGDir{direct};
-    DetectorSettings.ExcelFilepath = Annotate_dir{direct};
-    
+    if length(EEGDir) ==1
+        DetectorSettings.EEGFilepath = EEGDir{direct};
+        if length(Annotate_dir)>=direct
+            DetectorSettings.ExcelFilepath = Annotate_dir{direct};
+        end
+    else
+        DetectorSettings.EEGFilepath = char(EEGDir{direct});
+        if length(Annotate_dir)>=direct
+            DetectorSettings.ExcelFilepath = char(Annotate_dir{direct});
+        end
+    end
     try
         [fs, ~,~,~,~,StartDateTime,StudyLength,ChannelName] = CMConnect_ProFusionEEG4(DetectorSettings.EEGFilepath); % Determine study frequency (fs), the time and date the study started (StartDateTime), its length (StudyLength) and the names of channels (ChennelName)
     catch
@@ -44,7 +52,7 @@ for direct = 1:length(EEGDir)
     
     [Start.Year,Start.Month,Start.Day,Start.Hours,Start.Minutes,Start.Seconds] = datevec(StartDateTime, 'dd/mm/yyyy HH:MM:SS');
     Start.AMPM = StartDateTime(end-1:end);
-    
+    Start.StudyLength = StudyLength;
     
     [ChannelLength, Number_of_animals]  = CheckChannels(ChannelName); % Determine the number of channels per animal
     
@@ -267,7 +275,8 @@ for direct = 1:length(EEGDir)
                 Sheet_name = 'Seizure Start and End'; % Specify sheet name
                 for Day = 1:inc
                     Spreadsheet_Name = ['SeizuresDetected_AnimalNumber ',int2str(k),' SD',int2str(Start.Day),'CD',int2str(Start.Day+Day-1),'_',int2str(Start.Month),'_',int2str(Start.Year),'.xls']; % Specify name for spreadsheet
-                    xlswrite(Spreadsheet_Name,{'Seizure Start', 'Seizure End'},Sheet_name,'A1'); % Write names for each column
+                    xlswrite(Spreadsheet_Name,{'Seizure Start', 'Seizure End','Line Length Threshold','Amplitude Threshold'},Sheet_name,'A1'); % Write names for each column
+                    xlswrite(Spreadsheet_Name,[LLthreshold, Ampthreshold],'C2');
                     if length(Animal(k,Day).SeizureStartT)>1 % Check if a seizure was found for the animal of interest
                         a={Animal(k,Day).SeizureStartT{:}; Animal(k,Day).SeizureEndT{:}}'; % Create a cell with all seizure data
                         xlswrite(Spreadsheet_Name,[a{2:end,1}; a{2:end,2}]',Sheet_name,'A2'); % Write seizure data detected into excel sheet
@@ -279,6 +288,7 @@ for direct = 1:length(EEGDir)
                     Temp(Temp<Time_adjustmentT) = Temp(Temp<Time_adjustmentT)+Day_duration;
                     Annotated_data = zeros(size(Seizure_Compare,1),size(Seizure_Compare,2),2,inc);
                     for Day = 1:inc
+                        Animal(k,day).Detection =1;
                         Annotated_data = Temp(Temp(:,1)>Day_duration*(Day-1) & Temp(:,1)<Day_duration*(Day),:);
                         %  Sort out Seizure Compare File to make sure that it is working correctly for different days
                         CompareSeizures(Start,k,Annotated_data,Animal(k,Day),Day);
@@ -288,6 +298,8 @@ for direct = 1:length(EEGDir)
         end
     end
     if DetectorSettings.ProcessAnnotated
+        Padding = str2double(DetectorSettings.Padding); % Specify padding used at start and end of seizure
+        Start.Padding = Padding;
         Epochs = str2num(DetectorSettings.SplitSeizure);
         if ProgramType(2)==1
             for k = AnimalN
@@ -311,26 +323,40 @@ for direct = 1:length(EEGDir)
         Seizure_Compare = ReadEEGExcel(DetectorSettings.ExcelFilepath,'Matlab',Number_of_animals,Start.Day,0);
         for k =1:size(Seizure_Compare,3)  %SeizuresDetected_AnimalNumber 1 SD4CD4_8_2013
             Directory = dir(['SeizuresDetected*Number ',int2str(k),'*SD',int2str(Start.Day),'*.xls']);
-            j =0;
+            j =1;
             Temp =0;
-            while j<length(Directory)
+            Days =0;
+            while j<=length(Directory)
                 if ~isempty(strfind(Directory(j).name,['CD',int2str(Start.Day+Temp)]))
-                    j = j+1;
                     Days = Temp+1;
                     DetectorDataT = xlsread(Directory(j).name,'Seizure Start and End');
-                    DetectorData(:,:,Days) = reshape(datestr(DetectorDataT,13),size(DetectorDataT,1),2);
+                    if ~isempty(DetectorDataT)
+                        if ~(DetectorDataT(1,1) ==0 && DetectorDataT(1,2) ==0)
+                    DetectorData(k,Days).SeizureStartT = datestr(DetectorDataT(:,1),13);
+                    DetectorData(k,Days).SeizureEndT = datestr(DetectorDataT(:,2),13);
+                    DetectorData(k,Days).Detection =1;
+                    else 
+                        DetectorData(k,Days).Detection =0; % No seizures detected
+                        end
+                    else 
+                        DetectorData(k,Days).Detection =0; % No seizures detected
+                    end
+                    j = j+1;
                 end
                 Temp = Temp+1;
             end
-            
-            Time_adjustmentT = ((Start.Hours)*60+Start.Minutes)*60 + Start.Seconds;
-            Temp = Seizure_Compare(:,:,k);
-            Temp(Temp<Time_adjustmentT) = Temp(Temp<Time_adjustmentT)+Day_duration;
-            Annotated_data = zeros(size(Seizure_Compare,1),size(Seizure_Compare,2),2,inc);
-            for Day = 1:Days
-                Annotated_data = Temp(Temp(:,1)>Day_duration*(Day-1) & Temp(:,1)<Day_duration*(Day),:);
-                CompareSeizures(Start,k,Annotated_data,DetectorData,Day);
+            if Days>0
+                Start.Time_adjustmentT = ((Start.Hours)*60+Start.Minutes)*60 + Start.Seconds;
+                Temp = Seizure_Compare(:,:,k);
+                Temp(Temp<Start.Time_adjustmentT) = Temp(Temp<Start.Time_adjustmentT)+Day_duration;
+                Annotated_data = zeros(size(Seizure_Compare,1),size(Seizure_Compare,2),2,Days);
+                for Day = 1:Days
+                    Annotated_data = Temp(Temp(:,1)>Day_duration*(Day-1) & Temp(:,1)<Day_duration*(Day),:);
+                    CompareSeizures(Start,k,Annotated_data,DetectorData(k,Day),Day);
+                end % End for loop over number of days the study is over
             end
-        end
-    end
-end
+        end % End for loop over number of animals with annotated seizures
+    end % End if statement to determine whether to compare seizures
+    CMDisconnect_ProFusionEEG4;
+end% End for loop over batch files
+

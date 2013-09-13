@@ -32,9 +32,6 @@ GUIFigure = figure('Name','Detector GUI');
 
 %%
 
-% Check boxes
-% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 % Seizure detection analysis
 Seizure_Detection= uicontrol('style','checkbox','parent',GUIFigure,'units','normalized','position',[0.4 0.9 0.28 0.04],'string','Seizure Detection','callback',@DetectCHK);
 
@@ -46,7 +43,7 @@ Characterise_all_data =uicontrol('style','checkbox','parent',GUIFigure,'units','
 
 Post_process_characterise = uicontrol('style','checkbox','parent',GUIFigure,'units','normalized','position',[0.4 0.6 0.28 0.04],'string','Process Characterised Data','callback',@ProcessData);
 
-Batch_process = uicontrol('style','checkbox','parent',GUIFigure,'units','normalized','position',[0.03 0.1 0.29 0.04],'string','Process Multiple Files','Visible','on');
+Batch_process = uicontrol('style','checkbox','parent',GUIFigure,'units','normalized','position',[0.03 0.1 0.29 0.04],'string','Process Multiple Files','Visible','on','callback',@Batch);
 
 % Conditional Check boxes
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -153,8 +150,8 @@ Browse_EEG_file=uicontrol('style','pushbutton','parent',GUIFigure,'units','norma
 % Conditional pushbutton
 % ~~~~~~~~~~~~~~~~~~
 Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',GUIFigure,'units','normalized','position',[0.03 0.5 0.15 0.04],'string','Browse','callback',@BrowseAnnotate,'Visible','off');
-%%
 
+Clear_batch_list=uicontrol('style','pushbutton','parent',GUIFigure,'units','normalized','position',[0.03 0.15 0.15 0.04],'string','Clear batch list','callback',@ClearList,'Visible','off');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -162,8 +159,17 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',GUIFigure,'units','n
 % Callback Functions
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-% Callback when Seizure_Detection is checked
-% ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+% Callback function for folder designation
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    function Batch(varargin)
+        if get(Batch_process,'Value')
+           set(Clear_batch_list,'visible','on');
+        else
+            set(Clear_batch_list,'visible','off');
+        end
+    end
 
     function BrowseEEG(varargin)
         EEG = guidata(GUIFigure);
@@ -192,7 +198,7 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',GUIFigure,'units','n
 
     function BrowseAnnotate(varargin)
         EEG = guidata(GUIFigure);
-                k=0;
+        k=0;
         EEG_Annotate_files ={};
         EEG_Annotate_file_path =1;
         if get(Batch_process,'value')
@@ -208,12 +214,19 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',GUIFigure,'units','n
             [EEG_Annotate_file_path pathT] = uigetfile('.xlsx');
             if EEG_Annotate_file_path ~=0
                 EEG_Annotate_files = {strcat(pathT,EEG_Annotate_file_path)};
-                set(EEG_Seizure_times_data_path,'string',EEG_Annotate_files) 
+                set(EEG_Seizure_times_data_path,'string',EEG_Annotate_files)
             end
         end
         EEG.Annotate = EEG_Annotate_files;
         guidata(EEG_data_path,EEG);
     end
+
+    function ClearList(varargin)
+        guidata(GUIFigure,[]);
+    end
+
+% Callback when Seizure_Detection is checked
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     function DetectCHK(varargin)
         if get(Seizure_Detection,'Value') ==1 % Determine if box checked or unchecked
@@ -389,17 +402,27 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',GUIFigure,'units','n
         clear filepath LLThres AmpThres Excel_data_filepath % CLear all temporary variables at start of callback
         %         set(PushStart,'Enable','Off') % Disable Push button during analysis
         Gui = guidata(EEG_data_path);
-        guidata(EEG_data_path,'');
         set(ErrorMessage,'Visible','Off') % Turn off error message edit box
         set(ErrorMessage,'string','Analysis Started') % Set error message
         set(ErrorMessage,'Visible','On') % Display error message
         filepath =  get(EEG_data_path,'string'); % Get filepath from edit box
+        if ~iscell(filepath)
+            filepath ={filepath}
+        end
+        Excel_data_filepath =  get(EEG_Seizure_times_data_path,'string');
+        if ~iscell(Excel_data_filepath)
+            Excel_data_filepath = {Excel_data_filepath}
+        end
         if isempty(filepath) % Determine if filepath specified
             set(ErrorMessage,'string','No .eeg filepath specified') % Inform user that no filepath is specified
             set(ErrorMessage,'Visible','On') % Show error message
             return % End callback
         else
+            if get(Batch_process,'Value')
             DetectorSettings.EEGFilepath=Gui.Data; % Set detector settings with filepath specified
+            else
+              DetectorSettings.EEGFilepath= filepath;
+            end
         end
         if get(Seizure_Detection,'Value') % Check if Seizure_Detection is checked
             LLThres = get(LineLengthThreshold,'string'); % Get value in edit box specifying threshold for line length
@@ -420,13 +443,16 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',GUIFigure,'units','n
             end
             if get(Compare_Seizures,'Value')
                 DetectorSettings.CompareSeizures =1;
-                Excel_data_filepath =  get(EEG_Seizure_times_data_path,'string'); % Get excel filepath from edit box
                 if isempty(Excel_data_filepath)% Check if excel filepath exists
                     set(ErrorMessage,'string','No excel filepath specified') % Set error message
                     set(ErrorMessage,'Visible','On') % Show error message
                     return % End callback
                 else
+                    if get(Batch_process,'Value')
                     DetectorSettings.ExcelFilepath =  Gui.Annotate; % Set filepath for excel file in detector settings
+                    else
+                       DetectorSettings.ExcelFilepath=Excel_data_filepath;
+                    end
                 end
             end
             if get(Select_Channels,'Value')
@@ -450,13 +476,17 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',GUIFigure,'units','n
             DetectorSettings.PlotFeatures = get(Plot_features,'Value'); % Update detector settings with plot features
             DetectorSettings.SaveData = get(Save_data,'Value');
             DetectorSettings.ProcessAnnotated = get(Post_process_annotate,'Value');
-            Excel_data_filepath =  get(EEG_Seizure_times_data_path,'string'); % Get excel filepath from edit box
+             % Get excel filepath from edit box
             if isempty(Excel_data_filepath)% Check if excel filepath exists
                 set(ErrorMessage,'string','No excel filepath specified') % Set error message
                 set(ErrorMessage,'Visible','On') % Show error message
                 return % End callback
             else
-                DetectorSettings.ExcelFilepath = Gui.Annotate; % Set filepath for excel file in detector settings
+                if get(Batch_process,'Value')
+                    DetectorSettings.ExcelFilepath =  Gui.Annotate; % Set filepath for excel file in detector settings
+                    else
+                       DetectorSettings.ExcelFilepath=Excel_data_filepath;
+                    end % Set filepath for excel file in detector settings
             end
             PaddingStr = get(Padding,'string');
             if ~isempty(PaddingStr)
@@ -482,13 +512,18 @@ Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',GUIFigure,'units','n
                     DetectorSettings.SplitSeizure ='4';
                 end
             end
-            DetectorSettings.ProcessAnnotated =1;
+            DetectorSettings.ProcessAnnotated =get(Process_annotations,'value');
+            DetectorSettings.CompareS = get(Process_Seizures,'value');
             if isempty(Excel_data_filepath)% Check if excel filepath exists
                 set(ErrorMessage,'string','No excel filepath specified') % Set error message
                 set(ErrorMessage,'Visible','On') % Show error message
                 return % End callback
             else
-                DetectorSettings.ExcelFilepath = Excel_data_filepath; % Set filepath for excel file in detector settings
+                if get(Batch_process,'Value')
+                    DetectorSettings.ExcelFilepath =  Gui.Annotate; % Set filepath for excel file in detector settings
+                    else
+                       DetectorSettings.ExcelFilepath=Excel_data_filepath;
+                    end % Set filepath for excel file in detector settings
             end
         else % Check if no options selected
             set(ErrorMessage,'string','No options chosen') % Set error message
