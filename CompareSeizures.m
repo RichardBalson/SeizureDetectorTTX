@@ -23,7 +23,7 @@ function [Seconds] = hms2sec(Time)
 % Change time in format 'HH:MM:SS' to seconds
 
 Seconds = zeros(size(Time,1),1);
-for k = 1:length(Time)
+for k = 1:size(Time,1)
     if iscell(Time)
     index = cell2mat(strfind(Time{k},':'));
     else
@@ -139,7 +139,9 @@ end
     xlswrite(Spreadsheet_Name,Excel_dataN,Sheet_name,'G2');
     xlswrite(Spreadsheet_Name,Excel_dataT,Sheet_name,'A1');
     xlswrite(Spreadsheet_Name,Excel_dataD,Sheet_name,'A2');
+    if size(Excel_DataF,1)>0
     xlswrite(Spreadsheet_Name,Excel_DataF,Sheet_name,'K2');
+    end
     
     
     

@@ -1,4 +1,4 @@
-function Analyse_data_characterise(data,window_length,frequency_bands,sampling_frequency,Animal_number,j,Start,PlotFeatures)
+function Analyse_data_characterise(data,window_length,frequency_bands,sampling_frequency,Animal_number,j,Start,DetectorSettings,Severity)
 % function created by Richard Balson 26/03/2013
 
 % description
@@ -11,8 +11,6 @@ function Analyse_data_characterise(data,window_length,frequency_bands,sampling_f
 
 % Beginning of function
 % ~~~~~~~~~~~~~~~~~~~~~
-
-Zero_crossing_threshold =4;
 
 nfeatures = [0 1 1 1]; % Specify features to plot nfeatures(1-4) correspond to Zero crossings, freqeuncy, amplitude and line length respectively
 
@@ -34,30 +32,29 @@ for m = 1:size(data,2) % Loop through channels
     
     splits = floor(EEG_time/window_length); % Determine number of data splits reuqired given the total
     
-    [Zero_crossings Amplitude Line_length Line_time] = FeatureExtraction(data(:,m),window_length,sampling_frequency,Split_length,Zero_crossing_threshold); % Extract features from data
+    [Zero_crossings Amplitude Line_length Line_time] = FeatureExtraction(data(:,m),window_length,sampling_frequency,Split_length,DetectorSettings.ZCDThreshold); % Extract features from data
     
-    if PlotFeatures % Check if features need to be plotted
+    if DetectorSettings.PlotFeatures % Check if features need to be plotted
         data_split = zeros(window_samples,chs,splits); % Initialse split data matrix
         frequency_output =zeros(length(frequency_bands)-1,chs,splits); % Initiliase frequency output
-        
         for k = 1:splits % Loop through feature subwindows
             data_split(:,:,k) = data(((k-1)*window_samples+1):(k*window_samples),m); % Determine data in each split
             frequency_output(:,:,k) = freq_band_power_modified(data_split(:,:,k),sampling_frequency,frequency_bands); % Analyse data for each split
         end
-%         
-%         if (round(splits*window_length) < EEG_time) % Check if a segment of data needs to be augmented
-%             data_augment = data((round(splits*window_length)+1):length(data),m); % Obtain augmented data
-%             frequency_output_augmented =  freq_band_power_modified(data_augment,sampling_frequency,frequency_bands);
-%         else % No augmented data required
-%             frequency_output_augmented =[];  % Empty augmented output matrix
-%         end
+        %
+        %         if (round(splits*window_length) < EEG_time) % Check if a segment of data needs to be augmented
+        %             data_augment = data((round(splits*window_length)+1):length(data),m); % Obtain augmented data
+        %             frequency_output_augmented =  freq_band_power_modified(data_augment,sampling_frequency,frequency_bands);
+        %         else % No augmented data required
+        %             frequency_output_augmented =[];  % Empty augmented output matrix
+        %         end
         
         % Plot data and features for all channels
         
         plot_features(window_length, splits, frequency_bands, frequency_output(:,1,:),Zero_crossings,Line_time,data,t,Animal_number,j,m, Amplitude,Line_length,nfeatures); % Plot features on a single graph
     end
     
-    WriteExcel(data(:,m),Amplitude, Zero_crossings,Line_time,Line_length,Animal_number,j,m,Start,t); % Write features for the corresponing data to excel
+    WriteExcel(Amplitude, Zero_crossings,Line_time,Line_length,Animal_number,j,m,Start,Severity); % Write features for the corresponing data to excel
 end
 
 
@@ -134,6 +131,7 @@ for k = 1:Number_of_windows % Loop through number of windows
         index1 = (k-1)*WindowSamples+(m)*SplitSamples; % Index for last sample in window
         Amplitude((k-1)*Splits_per_window+m) = sum(abs(data(index:index1,:)))/(WindowSamples); % Sum the absoltue value of all amplitude in the current window and divide by number of samples
         Line_length((k-1)*Splits_per_window+m) = sum(abs(data(index+1:index1,:)-data(index:index1-1,:)))*sample_rate/(WindowSamples-1); % Sum the absolute value of all line length samples in the current window
+        % to get the mean of each feature over the current feature window
     end
     for m = 1:Splits_per_window % Loop through number of feture windows
         index = (k-1)*WindowSamples+(m-1)*SplitSamples+1; % Index for first sample in window
@@ -145,7 +143,7 @@ end
 
 
 
-function WriteExcel(data,Amplitude, Crossings,Crossing_time,Line_length,k,j,m,Start,t)
+function WriteExcel(Amplitude, Crossings,Crossing_time,Line_length,k,j,m,Start,Severity)
 % This function writes all data to excel
 
 Spreadsheet_number ='.xls'; % Initalise spreadsheet
@@ -158,16 +156,26 @@ for mcheck = 1:10 % Loop through dummy varaible
 end
 Spreadsheet_Name = ['AnimalNumber ',int2str(k),'_Pad_',int2str(Start.Padding),' SD',int2str(Start.Day),'CD',int2str(Start.CurrentDay),'_',int2str(Start.Month),'_',int2str(Start.Year),Spreadsheet_number]; % Initilaise spreadsheet name
 Sheet_name = ['Seizure',int2str(j)]; % Initilaise sheet name
-column = [char((m-1)*6+65),'2']; % Specify initialse starting point in excel for Feature names
-columnN = [char((m-1)*6+65),'1']; % Specify initial statrting point for channel details
-columnD = [char((m-1)*6+65),'3']; % Specify initial starting point for data
+column = [char((m-1)*5+65),'2']; % Specify initialse starting point in excel for Feature names
+columnN = [char((m-1)*5+65),'1']; % Specify initial statrting point for channel details
+columnD = [char((m-1)*5+65),'3']; % Specify initial starting point for data
+columnS =  [char((m)*5+64),'3'];
 Excel_dataN = {['Channel ',int2str(m)]}; % Specify channel details
-% EEG_data = [data,t']; 
-Excel_dataT = {'Maximum Amplitude','Zero Crossings', 'Line Length', 'Time (s)','EEG Data (mV)', 'Time (s)'}; % Specify names for EEG feature data
+% EEG_data = [data,t'];
+Excel_dataT = {'Maximum Amplitude','Zero Crossings', 'Line Length', 'Time (s)','Seizure Severity'}; % Specify names for EEG feature data
 Excel_dataD = [Amplitude,Crossings,Line_length,Crossing_time']; % Specify features to write to excel
-
+if isempty(Severity)
+    ExcelS = {'Severity not found in excel file'};
+else
+    if Severity ==1
+        ExcelS = {'Convulsive'};
+    else
+        ExcelS = {'Non-convulsive'};
+    end
+end
 % Write data to excel
 xlswrite(Spreadsheet_Name,Excel_dataN,Sheet_name,columnN);
 xlswrite(Spreadsheet_Name,Excel_dataT,Sheet_name,column);
 % xlswrite(Spreadsheet_Name,EEG_data,Sheet_name,columnE);
 xlswrite(Spreadsheet_Name,Excel_dataD,Sheet_name,columnD);
+xlswrite(Spreadsheet_Name,ExcelS,Sheet_name,columnS);

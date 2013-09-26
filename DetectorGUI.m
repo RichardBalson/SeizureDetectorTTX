@@ -27,6 +27,9 @@ ProgramType = [0 0 0];% Index 1 Detector, 2 characterise seizures, 3 characteris
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % GUI creation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%
+
 global GUIFigure;
 GUIFigure = figure('Name','Detector GUI');
 
@@ -103,6 +106,10 @@ DurationText = uicontrol('style','text','parent',GUIFigure,'units','normalized',
 
 SeizureSplitText = uicontrol('style','text','parent',GUIFigure,'units','normalized','position',[0.7 0.7 0.29 0.04],'string','Split Seizure (4)','Visible','off');
 
+Annotated_Duration_text = uicontrol('style','text','parent',GUIFigure,'units','normalized','position',[0.7 0.45 0.29 0.04],'string','Annotation Duration (Hours), Start Time (24hour 18:00:00)','Visible','off');
+
+ZCDThreshold_text = uicontrol('style','text','parent',GUIFigure,'units','normalized','position',[0.7 0.7 0.29 0.04],'string','Zero Crossing Detector Threshold','Visible','off');
+
 % PostprocessString = uicontrol('style','text','parent',GUIFigure,'units','normalized','position',[0.03 0.55 0.35 0.04],'string','Characterised seizures Excel file','Visible','off');
 % Edit boxes
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -115,7 +122,7 @@ ErrorMessage = uicontrol('style','edit','parent',GUIFigure,'units','normalized',
 
 ChannelChoice = uicontrol('style','edit','parent',GUIFigure,'units','normalized','position',[0.4 0.5 0.25 0.04]);
 
-% Optional edit boxes
+% Conditional edit boxes
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 % Available when Seizure Charaterise is checked. Edit box for details about EEG Seizure Data Times
@@ -139,6 +146,10 @@ SeizureDuration = uicontrol('style','edit','parent',GUIFigure,'units','normalize
 
 SeizureSplitEdit = uicontrol('style','edit','parent',GUIFigure,'units','normalized','position',[0.7 0.65 0.29 0.04],'Visible','off');
 
+Annotated_Duration = uicontrol('style','edit','parent',GUIFigure,'units','normalized','position',[0.7 0.4 0.29 0.04],'Visible','off');
+
+ZCDThreshold = uicontrol('style','edit','parent',GUIFigure,'units','normalized','position',[0.7 0.65 0.29 0.04],'Visible','off');
+
 % PushButton
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -152,6 +163,8 @@ Browse_EEG_file=uicontrol('style','pushbutton','parent',GUIFigure,'units','norma
 Browse_Annotate_EEG=uicontrol('style','pushbutton','parent',GUIFigure,'units','normalized','position',[0.03 0.5 0.15 0.04],'string','Browse','callback',@BrowseAnnotate,'Visible','off');
 
 Clear_batch_list=uicontrol('style','pushbutton','parent',GUIFigure,'units','normalized','position',[0.03 0.15 0.15 0.04],'string','Clear batch list','callback',@ClearList,'Visible','off');
+%%
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -165,7 +178,7 @@ Clear_batch_list=uicontrol('style','pushbutton','parent',GUIFigure,'units','norm
 
     function Batch(varargin)
         if get(Batch_process,'Value')
-           set(Clear_batch_list,'visible','on');
+            set(Clear_batch_list,'visible','on');
         else
             set(Clear_batch_list,'visible','off');
         end
@@ -231,12 +244,12 @@ Clear_batch_list=uicontrol('style','pushbutton','parent',GUIFigure,'units','norm
     function DetectCHK(varargin)
         if get(Seizure_Detection,'Value') ==1 % Determine if box checked or unchecked
             setVisInvis([Select_Seizure_Duration,Select_Channels,Compare_Seizures,LineLengthString,AmplitudeString,LineLengthThreshold,AmplitudeThreshold],...%Visible
-                [PaddingString,Padding,EEGSort,Browse_Annotate_EEG,EEG_Seizure_times_data_path,SeizureSplitText,SeizureSplitEdit],...%Invisible
+                [PaddingString,Padding,EEGSort,Browse_Annotate_EEG,EEG_Seizure_times_data_path,SeizureSplitText,SeizureSplitEdit,ZCDThreshold_text,ZCDThreshold],...%Invisible
                 [Process_Seizures,Plot_features,Save_data,Post_process_annotate,Process_annotations,Split_Seizure_epoch],...% Invisible+Value 0
                 [Seizure_Characterise,Post_process_characterise,Characterise_all_data]);% Value 0
         else % Seizure)Detection unchecked
             setVisInvis(0,...%Visible
-                [DurationText,SeizureDuration,ChannelText,Channel,LineLengthString,AmplitudeString,LineLengthThreshold,AmplitudeThreshold],...%Invisible
+                [DurationText,SeizureDuration,ChannelText,Channel,LineLengthString,AmplitudeString,LineLengthThreshold,AmplitudeThreshold,Annotated_Duration,Annotated_Duration_text],...%Invisible
                 [Select_Seizure_Duration,Select_Channels,Compare_Seizures],...% Invisible+Value 0
                 0);% Value 0
         end
@@ -246,8 +259,8 @@ Clear_batch_list=uicontrol('style','pushbutton','parent',GUIFigure,'units','norm
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     function SeizCharCHK(varargin)
         if get(Seizure_Characterise,'Value') ==1 % Determine if box checked or unchecked
-            setVisInvis([PaddingString,Padding,EEGSort,EEG_Seizure_times_data_path,Save_data,Browse_Annotate_EEG,Plot_features,Post_process_annotate],...%Visible
-                [DurationText,SeizureDuration,ChannelText,Channel,LineLengthString,AmplitudeString,LineLengthThreshold,AmplitudeThreshold],...%Invisible
+            setVisInvis([PaddingString,Padding,EEGSort,EEG_Seizure_times_data_path,Save_data,Browse_Annotate_EEG,Plot_features,Post_process_annotate,ZCDThreshold_text,ZCDThreshold],...%Visible
+                [DurationText,SeizureDuration,ChannelText,Channel,LineLengthString,AmplitudeString,LineLengthThreshold,AmplitudeThreshold,Annotated_Duration,Annotated_Duration_text],...%Invisible
                 [Process_annotations,Process_Seizures,Select_Seizure_Duration,Select_Channels,Compare_Seizures,Split_Seizure_epoch],...% Invisible+Value 0
                 [Seizure_Detection,Characterise_all_data,Post_process_characterise]);% Value 0
         else % Seizure_Characterise unchecked
@@ -263,7 +276,8 @@ Clear_batch_list=uicontrol('style','pushbutton','parent',GUIFigure,'units','norm
     function BackgCHK(varargin)
         if get(Characterise_all_data,'Value') ==1 % Determine if box checked or unchecked
             setVisInvis([0],...%Visible
-                [DurationText,SeizureDuration,ChannelText,Channel,PaddingString,Padding,EEGSort,Browse_Annotate_EEG,EEG_Seizure_times_data_path,LineLengthString,AmplitudeString,LineLengthThreshold,AmplitudeThreshold,SeizureSplitEdit,SeizureSplitText],...%Invisible
+                [DurationText,SeizureDuration,ChannelText,Channel,PaddingString,Padding,EEGSort,Browse_Annotate_EEG,EEG_Seizure_times_data_path,LineLengthString,AmplitudeString,...
+                LineLengthThreshold,AmplitudeThreshold,SeizureSplitEdit,SeizureSplitText,ZCDThreshold_text,ZCDThreshold,Annotated_Duration,Annotated_Duration_text],...%Invisible
                 [Process_annotations,Process_Seizures,Select_Seizure_Duration,Select_Channels,Plot_features,Save_data,Compare_Seizures,Post_process_annotate,Split_Seizure_epoch],...% Invisible+Value 0
                 [Seizure_Detection,Seizure_Characterise,Post_process_characterise]);% Value 0
         end
@@ -274,7 +288,8 @@ Clear_batch_list=uicontrol('style','pushbutton','parent',GUIFigure,'units','norm
     function ProcessData(varargin)
         if get(Post_process_characterise,'Value')
             setVisInvis([Process_Seizures,Process_annotations,Split_Seizure_epoch],...%Visible
-                [DurationText,SeizureDuration,ChannelText,Channel,PaddingString,Padding,EEGSort,Browse_Annotate_EEG,EEG_Seizure_times_data_path,LineLengthString,AmplitudeString,LineLengthThreshold,AmplitudeThreshold,SeizureSplitEdit,SeizureSplitText],...%Invisible
+                [DurationText,SeizureDuration,ChannelText,Channel,PaddingString,Padding,EEGSort,Browse_Annotate_EEG,EEG_Seizure_times_data_path,LineLengthString,AmplitudeString,...
+                LineLengthThreshold,AmplitudeThreshold,SeizureSplitEdit,SeizureSplitText,ZCDThreshold_text,ZCDThreshold,Annotated_Duration,Annotated_Duration_text],...%Invisible
                 [Select_Seizure_Duration,Plot_features,Save_data,Compare_Seizures,Post_process_annotate,Select_Channels,Split_Seizure_epoch],...% Invisible+Value 0
                 [Seizure_Detection,Seizure_Characterise,Characterise_all_data]);% Value 0
         else
@@ -317,13 +332,13 @@ Clear_batch_list=uicontrol('style','pushbutton','parent',GUIFigure,'units','norm
 
     function CompareDetect(varargin)
         if get(Process_Seizures,'Value')
-            setVisInvis([Browse_Annotate_EEG,EEG_Seizure_times_data_path,EEGSort],...%Visible
+            setVisInvis([Browse_Annotate_EEG,EEG_Seizure_times_data_path,EEGSort,Annotated_Duration,Annotated_Duration_text],...%Visible
                 [PaddingString,Padding],...%Invisible
                 [Split_Seizure_epoch],...% Invisible+Value 0
                 [Process_annotations]);% Value 0
         else
             setVisInvis([0],...%Visible
-                [Browse_Annotate_EEG,EEG_Seizure_times_data_path,EEGSort],...%Invisible
+                [Browse_Annotate_EEG,EEG_Seizure_times_data_path,EEGSort,Annotated_Duration,Annotated_Duration_text],...%Invisible
                 [0],...% Invisible+Value 0
                 [0]);% Value 0
         end
@@ -333,13 +348,13 @@ Clear_batch_list=uicontrol('style','pushbutton','parent',GUIFigure,'units','norm
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~
     function CompareCHK(varargin)
         if get(Compare_Seizures,'Value') % Check if checkbox is checked
-            setVisInvis([Browse_Annotate_EEG,EEG_Seizure_times_data_path,EEGSort],...%Visible
+            setVisInvis([Browse_Annotate_EEG,EEG_Seizure_times_data_path,EEGSort,Annotated_Duration,Annotated_Duration_text],...%Visible
                 [0],...%Invisible
                 [0],...% Invisible+Value 0
                 [0]);% Value 0
         else
             setVisInvis([0],...%Visible
-                [Browse_Annotate_EEG,EEG_Seizure_times_data_path,EEGSort],...%Invisible
+                [Browse_Annotate_EEG,EEG_Seizure_times_data_path,EEGSort,Annotated_Duration,Annotated_Duration_text],...%Invisible
                 [0],...% Invisible+Value 0
                 [0]);% Value 0
         end
@@ -397,7 +412,7 @@ Clear_batch_list=uicontrol('style','pushbutton','parent',GUIFigure,'units','norm
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     function StartProgram(varargin)
         DetectorSettings = struct('EEGFilepath',{{0}},'ExcelFilepath',{{0}},'PlotFeatures',0,'LLThres',0,'AmpThres',0,'CompareSeizures',0,...
-            'Padding','10','Animals',0,'SaveData',0,'ProcessAnnotated',0,'CompareS',0,'MinSeizure','0','Channels','all','SplitSeizure','1');
+            'Padding','10','Animals',0,'SaveData',0,'ProcessAnnotated',0,'CompareS',0,'MinSeizure','0','Channels','all','SplitSeizure','1','Annotated_Duration',0,'ZCDThreshold','2');
         ProgramType = [0 0 0];
         clear filepath LLThres AmpThres Excel_data_filepath % CLear all temporary variables at start of callback
         %         set(PushStart,'Enable','Off') % Disable Push button during analysis
@@ -407,11 +422,11 @@ Clear_batch_list=uicontrol('style','pushbutton','parent',GUIFigure,'units','norm
         set(ErrorMessage,'Visible','On') % Display error message
         filepath =  get(EEG_data_path,'string'); % Get filepath from edit box
         if ~iscell(filepath)
-            filepath ={filepath}
+            filepath ={filepath};
         end
         Excel_data_filepath =  get(EEG_Seizure_times_data_path,'string');
         if ~iscell(Excel_data_filepath)
-            Excel_data_filepath = {Excel_data_filepath}
+            Excel_data_filepath = {Excel_data_filepath};
         end
         if isempty(filepath) % Determine if filepath specified
             set(ErrorMessage,'string','No .eeg filepath specified') % Inform user that no filepath is specified
@@ -419,9 +434,9 @@ Clear_batch_list=uicontrol('style','pushbutton','parent',GUIFigure,'units','norm
             return % End callback
         else
             if get(Batch_process,'Value')
-            DetectorSettings.EEGFilepath=Gui.Data; % Set detector settings with filepath specified
+                DetectorSettings.EEGFilepath=Gui.Data; % Set detector settings with filepath specified
             else
-              DetectorSettings.EEGFilepath= filepath;
+                DetectorSettings.EEGFilepath= filepath;
             end
         end
         if get(Seizure_Detection,'Value') % Check if Seizure_Detection is checked
@@ -449,9 +464,13 @@ Clear_batch_list=uicontrol('style','pushbutton','parent',GUIFigure,'units','norm
                     return % End callback
                 else
                     if get(Batch_process,'Value')
-                    DetectorSettings.ExcelFilepath =  Gui.Annotate; % Set filepath for excel file in detector settings
+                        DetectorSettings.ExcelFilepath =  Gui.Annotate; % Set filepath for excel file in detector settings
                     else
-                       DetectorSettings.ExcelFilepath=Excel_data_filepath;
+                        DetectorSettings.ExcelFilepath=Excel_data_filepath;
+                    end
+                    Duration_Data = get(Annotated_Duration,'string');
+                    if ~isempty(Duration_Data)
+                        DetectorSettings.Annotated_Duration = Duration_Data;
                     end
                 end
             end
@@ -476,7 +495,7 @@ Clear_batch_list=uicontrol('style','pushbutton','parent',GUIFigure,'units','norm
             DetectorSettings.PlotFeatures = get(Plot_features,'Value'); % Update detector settings with plot features
             DetectorSettings.SaveData = get(Save_data,'Value');
             DetectorSettings.ProcessAnnotated = get(Post_process_annotate,'Value');
-             % Get excel filepath from edit box
+            % Get excel filepath from edit box
             if isempty(Excel_data_filepath)% Check if excel filepath exists
                 set(ErrorMessage,'string','No excel filepath specified') % Set error message
                 set(ErrorMessage,'Visible','On') % Show error message
@@ -484,9 +503,13 @@ Clear_batch_list=uicontrol('style','pushbutton','parent',GUIFigure,'units','norm
             else
                 if get(Batch_process,'Value')
                     DetectorSettings.ExcelFilepath =  Gui.Annotate; % Set filepath for excel file in detector settings
-                    else
-                       DetectorSettings.ExcelFilepath=Excel_data_filepath;
-                    end % Set filepath for excel file in detector settings
+                else
+                    DetectorSettings.ExcelFilepath=Excel_data_filepath;
+                end % Set filepath for excel file in detector settings
+                ZCDThresh = get(ZCDThreshold,'string');
+                if ~isempty(ZCDThresh)
+                    DetectorSettings.ZCDThreshold = ZCDThresh;
+                end
             end
             PaddingStr = get(Padding,'string');
             if ~isempty(PaddingStr)
@@ -521,9 +544,13 @@ Clear_batch_list=uicontrol('style','pushbutton','parent',GUIFigure,'units','norm
             else
                 if get(Batch_process,'Value')
                     DetectorSettings.ExcelFilepath =  Gui.Annotate; % Set filepath for excel file in detector settings
-                    else
-                       DetectorSettings.ExcelFilepath=Excel_data_filepath;
-                    end % Set filepath for excel file in detector settings
+                else
+                    DetectorSettings.ExcelFilepath=Excel_data_filepath;
+                end % Set filepath for excel file in detector settings
+                Duration_Data = get(Annotated_Duration,'string');
+                if ~isempty(Duration_Data)
+                    DetectorSettings.Annotated_Duration = Duration_Data;
+                end
             end
         else % Check if no options selected
             set(ErrorMessage,'string','No options chosen') % Set error message
@@ -542,8 +569,8 @@ Clear_batch_list=uicontrol('style','pushbutton','parent',GUIFigure,'units','norm
         if err
             set(ErrorMessage,'string','Number of files does not match') % Inform user that analysis is finished
         else
-        set(PushStart,'Enable','On') % Enable push button
-        set(ErrorMessage,'string','Analysis Finished') % Inform user that analysis is finished
+            set(PushStart,'Enable','On') % Enable push button
+            set(ErrorMessage,'string','Analysis Finished') % Inform user that analysis is finished
         end
     end
 end
