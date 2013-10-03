@@ -36,7 +36,11 @@ for k =1:Rows % Loop through all the seizures
         if (ExcelData(k,1) == j) % Determine if the
             n(j) = n(j)+1; % Increase the index for the specified cage
             if Columns >=4
+                if CurrentDay <=ExcelData(k,4)
                 Seizure_time_init(n(j),1:2,j) = ExcelData(k,2:3)+(ExcelData(k,4)-CurrentDay)*24*60*60; % Create a temporary varaible storing seizure times,
+                else
+                  Seizure_time_init(n(j),1:2,j) = ExcelData(k,2:3)+(ExcelData(k,4))*24*60*60;
+                end
                 % where rows are seizure for a particular animal,
                 % the columns have seizure times and the
                 % third dimension specifies the cage the seizure was found in

@@ -86,12 +86,12 @@ for direct = 1:length(EEGDir)
     % four animals in cages 1,3,5 and 7 each with four channels than
     % Number_of_animals = 7 and ChannelLength is 7x1 vector [4,0,4,0,4,0,4]'
     
-            if ((strcmp(Start.AMPM,'AM')) || ((Start.Hours == 12) && (strcmp(Start.AMPM,'PM')))) % This script filters and extracts profusion data. The startime is the
-            % starttime of seizures relative to midnight, in seconds,
-            Time_adjustment_Days = ((Start.Hours)*60+Start.Minutes)*60 + Start.Seconds; % remove time delay from recording time initialisation
-        else
-            Time_adjustment_Days = ((Start.Hours+12)*60+Start.Minutes)*60 + Start.Seconds; % remove time delay from recording time initialisation
-        end
+    if ((strcmp(Start.AMPM,'AM')) || ((Start.Hours == 12) && (strcmp(Start.AMPM,'PM')))) % This script filters and extracts profusion data. The startime is the
+        % starttime of seizures relative to midnight, in seconds,
+        Time_adjustment_Days = ((Start.Hours)*60+Start.Minutes)*60 + Start.Seconds; % remove time delay from recording time initialisation
+    else
+        Time_adjustment_Days = ((Start.Hours+12)*60+Start.Minutes)*60 + Start.Seconds; % remove time delay from recording time initialisation
+    end
     if any(ProgramType)
         
         % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -213,8 +213,8 @@ for direct = 1:length(EEGDir)
                     StartTime = Seizure_time(j,1,k)-Padding; % Determine start time, here it is the seizure start time less the specifed padding
                     Duration = round(Seizure_time(j,2,k)-StartTime+Padding); % Determine window duration
                     if size(Seizure_time,2)==3
-                    Severity = Seizure_time(j,3,k);
-                    else 
+                        Severity = Seizure_time(j,3,k);
+                    else
                         Severity =[];
                     end
                 end
@@ -288,41 +288,41 @@ for direct = 1:length(EEGDir)
                     end
                 end
                 if DetectorSettings.CompareSeizures
-                        if ~isnumeric(DetectorSettings.Annotated_Duration)
-                            [Annotated_Duration, Annotated_hour] = strtok(DetectorSettings.Annotated_Duration,',');
-                            [AnnotatedHour, AnnotationDays] = strtok(Annotated_hour,',');
-                            AnnotatedHour = str2num(AnnotatedHour);
-                            if ~isempty(AnnotationDays)
-                                AnnotationDays = str2num(AnnotationDays);
-                            end
-                            Start.AnnotatedDuration = str2num(Annotated_Duration);
-                            if (Start.AnnotatedDuration+AnnotatedHour>24)
-                                AnnotatedDurationLast =  Start.AnnotatedDuration+AnnotatedHour-24;
-                                AnnotatedDurationFirst = 24-AnnotatedHour;
-                                AnnotatedTimes = [AnnotatedHour 24 0 0;...
-                                                  ones(AnnotationDays,1)*[0 AnnotatedDurationLast AnnotatedHour 24];...
-                                                  0 AnnotatedDurationLast 0 0];
-                            else
-                                AnnotatedTimes =  ones(AnnotationDays,1)*[AnnotatedHour, AnnotatedHour+Start.AnnotatedDuration];
-                            end
-                        else
-                            AnnotatedTimes =ones(inc,1)*[0,24];
+                    if ~isnumeric(DetectorSettings.Annotated_Duration)
+                        [Annotated_Duration, Annotated_hour] = strtok(DetectorSettings.Annotated_Duration,',');
+                        [AnnotatedHour, AnnotationDays] = strtok(Annotated_hour,',');
+                        AnnotatedHour = str2num(AnnotatedHour);
+                        if ~isempty(AnnotationDays)
+                            AnnotationDays = str2num(AnnotationDays);
                         end
-                        Time_adjustmentT = Time_adjustment_Days;
-                        Temp = Seizure_Compare(:,:,k);
-                        Temp(Temp<Time_adjustmentT) = Temp(Temp<Time_adjustmentT)+Day_duration;
-                        Annotated_data = zeros(size(Seizure_Compare,1),size(Seizure_Compare,2),2,inc);
-                        for Day = 1:inc
-                            Animal(k,day).Detection =1;
-                            Annotated_data = Temp(Temp(:,1)>Day_duration*(Day-1) & Temp(:,1)<Day_duration*(Day),:);
-                            %  Sort out Seizure Compare File to make sure that it is working correctly for different days
-                            if exists('AnnotatedDuration(Day)','var')
-                                CompareSeizure(Start,k,Annotated_data,Animal(k,Day),Day,AnnotatedTimes(Day,:));
-                            end
+                        Start.AnnotatedDuration = str2num(Annotated_Duration);
+                        if (Start.AnnotatedDuration+AnnotatedHour>24)
+                            AnnotatedDurationLast =  Start.AnnotatedDuration+AnnotatedHour-24;
+                            AnnotatedDurationFirst = 24-AnnotatedHour;
+                            AnnotatedTimes = [AnnotatedHour 24 0 0;...
+                                ones(AnnotationDays,1)*[0 AnnotatedDurationLast AnnotatedHour 24];...
+                                0 AnnotatedDurationLast 0 0];
+                        else
+                            AnnotatedTimes =  ones(AnnotationDays,1)*[AnnotatedHour, AnnotatedHour+Start.AnnotatedDuration];
+                        end
+                    else
+                        AnnotatedTimes =ones(inc,1)*[0,24];
+                    end
+                    Time_adjustmentT = Time_adjustment_Days;
+                    Temp = Seizure_Compare(:,:,k);
+                    Temp(Temp<Time_adjustmentT) = Temp(Temp<Time_adjustmentT)+Day_duration;
+                    Annotated_data = zeros(size(Seizure_Compare,1),size(Seizure_Compare,2),2,inc);
+                    for Day = 1:inc
+                        Animal(k,day).Detection =1;
+                        Annotated_data = Temp(Temp(:,1)>Day_duration*(Day-1) & Temp(:,1)<Day_duration*(Day),:);
+                        %  Sort out Seizure Compare File to make sure that it is working correctly for different days
+                        if exists('AnnotatedDuration(Day)','var')
+                            CompareSeizure(Start,k,Annotated_data,Animal(k,Day),Day,AnnotatedTimes(Day,:));
                         end
                     end
                 end
             end
+        end
     end
     if DetectorSettings.ProcessAnnotated
         Padding = str2double(DetectorSettings.Padding); % Specify padding used at start and end of seizure
@@ -346,66 +346,67 @@ for direct = 1:length(EEGDir)
             end
         end
     end
-        if DetectorSettings.CompareS
-            Seizure_Compare = ReadEEGExcel(DetectorSettings.ExcelFilepath,'Matlab',Number_of_animals,Start.Day,0);
-            for k =1:size(Seizure_Compare,3)  %SeizuresDetected_AnimalNumber 1 SD4CD4_8_2013
-                Directory = dir(['SeizuresDetected*Number ',int2str(k),'*SD',int2str(Start.Day),'*.xls']);
-                j =1;
-                Temp =0;
-                while j<=length(Directory)
-                    if ~isempty(strfind(Directory(j).name,['CD',int2str(Start.Day+Temp)]))
+    if DetectorSettings.CompareS
+        Seizure_Compare = ReadEEGExcel(DetectorSettings.ExcelFilepath,'Matlab',Number_of_animals,Start.Day,0);
+        for k =1:size(Seizure_Compare,3)  %SeizuresDetected_AnimalNumber 1 SD4CD4_8_2013
+            Directory = dir(['SeizuresDetected*Number ',int2str(k),'*SD',int2str(Start.Day),'*.xls']);
+            j =1;
+            Temp =0;
+            while j<=length(Directory)
+                if ~isempty(strfind(Directory(j).name,['CD',int2str(Start.Day+Temp)]))
                     Days = Temp+1;
                     DetectorDataT = xlsread(Directory(j).name,'Seizure Start and End');
                     if ~isempty(DetectorDataT)
                         if ~(DetectorDataT(1,1) ==0 && DetectorDataT(1,2) ==0)
-                    DetectorData(k,Days).SeizureStartT = datestr(DetectorDataT(:,1),13);
-                    DetectorData(k,Days).SeizureEndT = datestr(DetectorDataT(:,2),13);
-                    DetectorData(k,Days).Detection =1;
-                    else 
-                        DetectorData(k,Days).Detection =0; % No seizures detected
+                            DetectorData(k,Days).SeizureStartT = datestr(DetectorDataT(:,1),13);
+                            DetectorData(k,Days).SeizureEndT = datestr(DetectorDataT(:,2),13);
+                            DetectorData(k,Days).Detection =1;
+                        else
+                            DetectorData(k,Days).Detection =0; % No seizures detected
                         end
-                    else 
+                    else
                         DetectorData(k,Days).Detection =0; % No seizures detected
                     end
                     j = j+1;
+                end
+                Temp = Temp+1;
+            end
+            if exist('Days','var')
+                [Annotated_Duration, Annotated_hour] = strtok(DetectorSettings.Annotated_Duration,',');
+                [AnnotatedHour, AnnotationDays] = strtok(Annotated_hour,',');
+                AnnotatedHour = str2num(AnnotatedHour);
+                if ~isempty(AnnotationDays)
+                    AnnotationDays = str2num(AnnotationDays);
+                else
+                    AnnotationDays=Days;
+                end
+                if ~isnumeric(DetectorSettings.Annotated_Duration)
+                    
+                    Start.AnnotatedDuration = str2num(Annotated_Duration);
+                    if (Start.AnnotatedDuration+AnnotatedHour>24)
+                        AnnotatedDurationLast =  Start.AnnotatedDuration+AnnotatedHour-24;
+                        AnnotatedDurationFirst = 24-AnnotatedHour;
+                        AnnotatedTimes = [AnnotatedHour 24 0 0;...
+                            ones(AnnotationDays,1)*[0 AnnotatedDurationLast AnnotatedHour 24];...
+                            0 AnnotatedDurationLast 0 0];
+                    else
+                        AnnotatedTimes =  ones(AnnotationDays,1)*[AnnotatedHour, AnnotatedHour+Start.AnnotatedDuration];
                     end
-                    Temp = Temp+1;
+                else
+                    AnnotatedTimes =ones(AnnotationDays,1)*[0,24];
                 end
-                if exist('Days','var')
-                    if ~isnumeric(DetectorSettings.Annotated_Duration)
-                            [Annotated_Duration, Annotated_hour] = strtok(DetectorSettings.Annotated_Duration,',');
-                            [AnnotatedHour, AnnotationDays] = strtok(Annotated_hour,',');
-                            AnnotatedHour = str2num(AnnotatedHour);
-                            if ~isempty(AnnotationDays)
-                                AnnotationDays = str2num(AnnotationDays);
-                            else
-                                AnnotationDays=1;
-                            end
-                            Start.AnnotatedDuration = str2num(Annotated_Duration);
-                            if (Start.AnnotatedDuration+AnnotatedHour>24)
-                                AnnotatedDurationLast =  Start.AnnotatedDuration+AnnotatedHour-24;
-                                AnnotatedDurationFirst = 24-AnnotatedHour;
-                                AnnotatedTimes = [AnnotatedHour 24 0 0;...
-                                                  ones(AnnotationDays,1)*[0 AnnotatedDurationLast AnnotatedHour 24];...
-                                                  0 AnnotatedDurationLast 0 0];
-                            else
-                                AnnotatedTimes =  ones(AnnotationDays,1)*[AnnotatedHour, AnnotatedHour+Start.AnnotatedDuration];
-                            end
-                        else
-                            AnnotatedTimes =ones(inc,1)*[0,24];
-                        end
-                    Start.Time_adjustmentT = Time_adjustment_Days;
-                    Temp = Seizure_Compare(:,:,k);
-                    Temp(Temp<Start.Time_adjustmentT) = Temp(Temp<Start.Time_adjustmentT)+Day_duration;
-                    Annotated_data = zeros(size(Seizure_Compare,1),size(Seizure_Compare,2),2,Days);
-                    for Day = 1:Days
-                        Annotated_data = Temp(Temp(:,1)>Day_duration*(Day-1) & Temp(:,1)<Day_duration*(Day),:);
-                        CompareSeizure(Start,k,Annotated_data,DetectorData(k,Day),Day,AnnotatedTimes(Day,:));
-                    end % End for loop over number of days the study is over
-                end
-                clear Days
-            end % End for loop over number of animals with annotated seizures
-        end % End if statement to determine whether to compare seizures
+                Start.Time_adjustmentT = Time_adjustment_Days;
+                Temp = Seizure_Compare(:,:,k);
+                Temp(Temp<Start.Time_adjustmentT) = Temp(Temp<Start.Time_adjustmentT)+Day_duration;
+                Annotated_data = zeros(size(Seizure_Compare,1),size(Seizure_Compare,2),2,Days);
+                for Day = 1:Days
+                    Annotated_data = Temp(Temp(:,1)>Day_duration*(Day-1) & Temp(:,1)<Day_duration*(Day),:);
+                    CompareSeizure(Start,k,Annotated_data,DetectorData(k,Day),Day,AnnotatedTimes(Day,:));
+                end % End for loop over number of days the study is over
+            end
+            clear Days
+        end % End for loop over number of animals with annotated seizures
+    end % End if statement to determine whether to compare seizures
     CMDisconnect_ProFusionEEG4;
 end
 end% End for loop over batch files

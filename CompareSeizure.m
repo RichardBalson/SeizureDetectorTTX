@@ -80,7 +80,7 @@ function [Correct, FP, FN, SSError, SEError, Percentage_Error_Total, indexR, SD,
 % marked by the detector as seizure (FP)
 indexAnnotate = [];
 for j = 1:length(AnnotatedTimes)/2
-    indexA = (AnnotatedTimes((j-1)*2+1)*60*60+1):(AnnotatedTimes((j-1)*2+2)*60*60+1);
+    indexA = (AnnotatedTimes((j-1)*2+1)*60*60+1):(AnnotatedTimes((j-1)*2+2)*60*60);
     if length(indexA)>1
         indexAnnotate = setxor(indexAnnotate,indexA);
     end
