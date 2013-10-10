@@ -30,9 +30,9 @@ dataIn = DataChDec(k:length(DataChDec),1);
 multiplier = 1000; % Change recordings to mV
 
 % tic
-
+if ~isempty(band_coeff)
 Filtered_data = Profusion_filter(dataIn*multiplier,band_coeff);
-
+end
 % filter_time = toc
 
 % dataIn =0;

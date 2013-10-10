@@ -53,8 +53,12 @@ for m = 1:size(data,2) % Loop through channels
         
         plot_features(window_length, splits, frequency_bands, frequency_output(:,1,:),Zero_crossings,Line_time,data,t,Animal_number,j,m, Amplitude,Line_length,nfeatures); % Plot features on a single graph
     end
-    
-    WriteExcel(Amplitude, Zero_crossings,Line_time,Line_length,Animal_number,j,m,Start,Severity); % Write features for the corresponing data to excel
+    if isfield(DetectorSettings,'FP')
+        NameA = 'FP';
+    else
+        NameA='';
+    end
+    WriteExcel(Amplitude, Zero_crossings,Line_time,Line_length,Animal_number,j,m,Start,Severity,NameA); % Write features for the corresponing data to excel
 end
 
 
@@ -143,7 +147,7 @@ end
 
 
 
-function WriteExcel(Amplitude, Crossings,Crossing_time,Line_length,k,j,m,Start,Severity)
+function WriteExcel(Amplitude, Crossings,Crossing_time,Line_length,k,j,m,Start,Severity,NameA)
 % This function writes all data to excel
 
 Spreadsheet_number ='.xls'; % Initalise spreadsheet
@@ -154,7 +158,7 @@ for mcheck = 1:10 % Loop through dummy varaible
         break; % Break loop
     end
 end
-Spreadsheet_Name = ['AnimalNumber ',int2str(k),'_Pad_',int2str(Start.Padding),' SD',int2str(Start.Day),'CD',int2str(Start.CurrentDay),'_',int2str(Start.Month),'_',int2str(Start.Year),Spreadsheet_number]; % Initilaise spreadsheet name
+Spreadsheet_Name = [NameA,'AnimalNumber ',int2str(k),'_Pad_',int2str(Start.Padding),' SD',int2str(Start.Day),'CD',int2str(Start.CurrentDay),'_',int2str(Start.Month),'_',int2str(Start.Year),Spreadsheet_number]; % Initilaise spreadsheet name
 Sheet_name = ['Seizure',int2str(j)]; % Initilaise sheet name
 column = [char((m-1)*5+65),'2']; % Specify initialse starting point in excel for Feature names
 columnN = [char((m-1)*5+65),'1']; % Specify initial statrting point for channel details

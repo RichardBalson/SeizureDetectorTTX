@@ -14,6 +14,29 @@ function [err] =Analyse_EEG_GUI(DetectorSettings,ProgramType)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Extract Data from profusion
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Filter settings
+
+% Specify analysis features
+% ~~~~~~~~~~~~~~~~~
+
+Decimate =1; % Specify decimation rate for data, for example if decimation is 2 frequency = fs/2. Note Decimate cannot be less than one
+
+highcutoff = 2.5; % Specify highcutoff frequency for filter
+
+lowcutoff = 40; % Specify low cutoff frequency for filter
+% Data will have frequency content between highcutoff and lowcutoff
+
+frequency_bands = 0:25; % Specify freqeuncy bands for analysis.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Algorithm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 err=0;
 Day_duration = 24*60*60;
 EEGDir = DetectorSettings.EEGFilepath;
@@ -40,6 +63,9 @@ for direct = 1:length(EEGDir)
         catch
             [fs, ~,~,~,~,StartDateTime,StudyLength,ChannelName] = CMConnect_ProFusionEEG41(DetectorSettings.EEGFilepath);
         end
+        
+        % Specify the coefficients for the fir filter as required
+        band_coeff = filtercoeff(lowcutoff,highcutoff,fs);
         % fs and StudyLength are integers, StartDateTime is a date vector in string
         % format and channelname is a cell of strings
         Days=1; % Check how many days the study consists of
@@ -144,27 +170,6 @@ for direct = 1:length(EEGDir)
             Channel_number =0; % Initialise counting of channels
             Channel_number_base =0; % Intialise base for counting
             
-            % Specify analysis features
-            % ~~~~~~~~~~~~~~~~~
-            
-            Decimate =1; % Specify decimation rate for data, for example if decimation is 2 frequency = fs/2. Note Decimate cannot be less than one
-            
-            highcutoff = 2.5; % Specify highcutoff frequency for filter
-            
-            lowcutoff = 40; % Specify low cutoff frequency for filter
-            % Data will have frequency content between highcutoff and lowcutoff
-            
-            frequency_bands = 0:25; % Specify freqeuncy bands for analysis.
-            
-            
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Algorithm
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            
-            % Specify the coefficients for the fir filter as required
-            band_coeff = filtercoeff(lowcutoff,highcutoff,fs);
             
             % Create a structure to store seizure detection data
             Animal=repmat(struct('SeizureStartT',{{'0'}},'SeizureEndT',{{'0'}}),Number_of_animals,1);
@@ -318,8 +323,11 @@ for direct = 1:length(EEGDir)
                             Annotated_data = Temp(Temp(:,1)>Day_duration*(Day-1) & Temp(:,1)<Day_duration*(Day),:);
                             %  Sort out Seizure Compare File to make sure that it is working correctly for different days
                             if exists('AnnotatedDuration(Day)','var')
-                                CompareSeizure(Start,k,Annotated_data,Animal(k,Day),Day,AnnotatedTimes(Day,:));
+                                FalsePositiveTimes{k,Day}=CompareSeizure(Start,k,Annotated_data,Animal(k,Day),Day,AnnotatedTimes(Day,:));
                             end
+                        end
+                        if k ==AnimalN
+                            CharacteriseFalsePositive(FalsePositiveTimes,DetectorSettings.EEGFilepath,ChannelT,band_coeff,fs);
                         end
                     end
                 end
@@ -372,6 +380,9 @@ for direct = 1:length(EEGDir)
                     end
                     Temp = Temp+1;
                 end
+                if ~exist('DetectorData','var')
+                    DetectorData = 0;
+                end
                 if exist('Days','var')
                     [Annotated_Duration, Annotated_hour] = strtok(DetectorSettings.Annotated_Duration,',');
                     [AnnotatedHour, AnnotationDays] = strtok(Annotated_hour,',');
@@ -402,15 +413,17 @@ for direct = 1:length(EEGDir)
                     Annotated_data = zeros(size(Seizure_Compare,1),size(Seizure_Compare,2),2,Days);
                     for Day = 1:Days
                         Annotated_data = Temp(Temp(:,1)>Day_duration*(Day-1) & Temp(:,1)<Day_duration*(Day),:);
-                        CompareSeizure(Start,k,Annotated_data,DetectorData(k,Day),Day,AnnotatedTimes(Day,:));
+                        FalsePositiveTimes{k,Day} = CompareSeizure(Start,k,Annotated_data,DetectorData(k,Day),Day,AnnotatedTimes(Day,:));
                     end % End for loop over number of days the study is over
                 end
                 clear Days
             end % End for loop over number of animals with annotated seizures
+            CharacteriseFalsePositives(FalsePositiveTimes,DetectorSettings.EEGFilepath,ChannelT,band_coeff);
         end % End if statement to determine whether to compare seizures
         CMDisconnect_ProFusionEEG4;
-    catch
+    catch err
         disp(['Error processing',DetectorSettings.EEGFilepath]);
+        rethrow(err);
     end
 end
 end% End for loop over batch files

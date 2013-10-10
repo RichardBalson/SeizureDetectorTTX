@@ -1,4 +1,4 @@
-function CompareSeizures1(Start,Animal,Seizure_Compare,SeizureTimes,Day,AnnotatedTimes)
+function FalsePosTimes= CompareSeizures(Start,Animal,Seizure_Compare,SeizureTimes,Day,AnnotatedTimes)
 % Created by Richard Balson 28/05/2013
 
 if Day ~=1
@@ -14,7 +14,7 @@ else
 end
 % SeizureSec(SeizureSec==0) = SeizureSec(SeizureSec==0
 [Detect_seizure_matrix, Annotate_seizure_matrix] = Seizure2binary(Seizure_Compare,SeizureSec,StartSecond);
-[Seizures_Correctly_Detected, False_Positive, False_Negative, SeizureStartTimeError, SeizureEndTimeError, TotalError, SeizureMatchIndex, Seizures_Detected, Actual_Seizures, Annotated_Seizure_Duration,StudyDuration] ...
+[Seizures_Correctly_Detected, False_Positive, False_Negative, SeizureStartTimeError, SeizureEndTimeError, TotalError, SeizureMatchIndex, Seizures_Detected, Actual_Seizures, Annotated_Seizure_Duration,StudyDuration, FalsePosTimes] ...
     = Seizure_Count_Correct(Detect_seizure_matrix,Annotate_seizure_matrix,Start,Day,AnnotatedTimes);
 WriteExcel(Start,Animal,Seizures_Correctly_Detected,False_Positive,False_Negative,SeizureStartTimeError,SeizureEndTimeError,TotalError,SeizureMatchIndex,Seizures_Detected,Actual_Seizures,Annotated_Seizure_Duration,Day,StudyDuration);
 
@@ -62,6 +62,11 @@ ASMIndex(ASMIndex<0) = ASMIndex(ASMIndex<=0)+ 24*60*60;
 ASMDurationIndex = Seizure_Compare(:,2) - Seizure_Compare(:,1)+ASMIndex;
 DSMIndex = SeizureSec(:,1);
 DSMIndex(DSMIndex<0) = DSMIndex(DSMIndex<0)+ 24*60*60;
+if ~isempty(SeizureSec)
+if SeizureSec(end,2) < SeizureSec(end,1)
+    SeizureSec(end,2) = 24*60*60;
+end
+end
 DSMDurationIndex = SeizureSec(:,2)-SeizureSec(:,1)+ DSMIndex;
 for k = 1:length(DSMIndex)
     if round(DSMIndex(k))~=round(DSMDurationIndex(k))
@@ -74,7 +79,7 @@ for k =1:length(ASMIndex)
     end
 end
 
-function [Correct, FP, FN, SSError, SEError, Percentage_Error_Total, indexR, SD, AS,ASMD,StudyDuration] = Seizure_Count_Correct(DSM,ASM,Start,Day,AnnotatedTimes)
+function [Correct, FP, FN, SSError, SEError, Percentage_Error_Total, indexR, SD, AS,ASMD,StudyDuration, DSFP] = Seizure_Count_Correct(DSM,ASM,Start,Day,AnnotatedTimes)
 % Determine the number of correctly detected seizures,  how many seizures
 % have been missed by the detector(FN) and how many non seizure events are
 % marked by the detector as seizure (FP)
@@ -107,6 +112,12 @@ DSMIndexStart = strfind(DSM(index),[0 1])+1;
 DSMIndexEnd = strfind(DSM(index),[1 0]);
 ASMIndexStart = strfind(ASM(index),[0 1])+1;
 ASMIndexEnd = strfind(ASM(index),[1 0])+1;
+if ASM(end) ==1
+    ASMIndexEnd(end+1) = StudyDuration;
+end
+if DSM(end) ==1
+    DSMIndexEnd(end+1) = StudyDuration;
+end
 ASMD = ASMIndexEnd-ASMIndexStart;
 Correct =0;
 for k =1:length(DSMIndexStart)
@@ -119,17 +130,25 @@ for k =1:length(DSMIndexStart)
             SSError(Correct) = ASMIndexStart(j)-DSMIndexStart(k);
             SEError(Correct) = ASMIndexEnd(j) - DSMIndexEnd(k);
             ASMIndexStart(j) =0; ASMIndexEnd(j) =0;
+            DSM(DSMIndexStart(k)-1:DSMIndexEnd(k))=0;
         end
     end
 end
 AS = length(ASMIndexStart);
 SD = length(DSMIndexStart);
 FN = AS-Correct;
-FP = SD-Correct;
+FP = SD-Correct; 
 if Correct ==0
     indexR = [0 0];
     SSError = 0;
     SEError = 0;
+end
+FPIndex =setdiff(1:length(DSMIndexStart),indexR(:,1));
+if ~ isempty(FPIndex)
+DSFP(:,1) = DSMIndexStart(FPIndex);
+DSFP(:,2) = DSMIndexEnd(FPIndex);
+else
+    DSFP = [];
 end
 
     function WriteExcel(Start,Animal,SCD,FP,FN,SSError,SEError,TE,SMI,SD,AS,ASD,Day,AnnotatedDuration)
